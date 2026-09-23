@@ -1,0 +1,690 @@
+﻿:root {
+    --warna-chat-pengirim: cadetblue;
+    --warna-chat-self: cornflowerblue;
+
+    --warna-hamburgerxside: #111827; 
+    --warna-menu: #d1d5db;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #E5E7EB;
+}
+
+
+/* =========================
+   HAMBURGER
+========================= */
+
+.hamburger {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--warna-hamburgerxside);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .hamburger:hover {
+        transform: scale(1.05);
+    }
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 230px;
+    height: 100vh;
+    padding: 25px 15px;
+    background-color: var(--warna-hamburgerxside);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    transition: 0.3s;
+}
+
+
+    /* Sidebar menghilang */
+
+    .sidebar.hide {
+        transform: translateX(-100%);
+    }
+
+
+/* =========================
+   LOGO
+========================= */
+
+.logo {
+    padding: 60px 15px 10px 15px;
+    margin-bottom: 30px;
+}
+    .logo h2 {
+        font-size: 24px;
+    }
+    .logo p {
+        font-size: 17px;
+    }
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    color: var(--warna-menu);
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+
+    .menu-item span {
+        width: 25px;
+        text-align: center;
+        font-size: 20px;
+    }
+
+
+    .menu-item p {
+        font-size: 15px;
+    }
+
+
+    .menu-item:hover {
+        background-color: #1f2937;
+        color: white;
+        transform: translateX(5px);
+    }
+
+
+    .menu-item.active {
+        background-color: #374151;
+        color: white;
+    }
+
+
+/* =========================
+   BOTTOM
+========================= */
+
+.sidebar-bottom {
+    margin-top: auto;
+}
+
+
+
+/*===========================
+   BUAT HOME PAGE
+=============================*/
+
+.contact {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cnt {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.home-header {
+    text-align: center;
+}
+
+.add-friend {
+    text-align: center;
+}
+
+#friendSearch {
+    padding: 10px;
+    margin-top: 20px;
+    margin-right: 5px;
+    background-color: powderblue;
+    border: solid;
+    border-radius: 20px;
+    box-shadow: #5797ff 8px 5px inset, black 2px 5px 10px;
+    transition: all 0.4s ease
+}
+
+    #friendSearch:hover {
+        box-shadow: #5797ff 5px 3px inset;
+    }
+
+#searchFriend {
+    appearance: button;
+    background-color: #1899D6;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: din-round,sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    line-height: 20px;
+    margin: 0;
+    outline: none;
+    overflow: visible;
+    padding: 13px 16px;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+
+#searchFriend:after {
+    background-clip: padding-box;
+    background-color: #1CB0F6;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    bottom: -4px;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+}
+
+
+    #searchFriend:focus {
+        user-select: auto;
+    }
+
+    #searchFriend:hover:not(:disabled) {
+        filter: brightness(1.1);
+        -webkit-filter: brightness(1.1);
+    }
+
+    #searchFriend:disabled {
+        cursor: auto;
+    }
+
+    #searchFriend:active {
+        border-width: 4px 0 0;
+        background: none;
+    }
+
+
+
+
+/*==================
+    Result
+====================*/
+.search-result {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 20px;
+}
+
+.resultofsearch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 20px;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    background: linear-gradient(white, white) padding-box, linear-gradient(90deg, #3B82F6, #24bd99, #9624bd) border-box;
+    background-size: 500% 500%;
+    animation: gradiasigerak 3s ease infinite;
+    transition: all 0.2s ease;
+    box-shadow: 8px 6px 0 black;
+    cursor: pointer;
+}
+
+    .resultofsearch:hover {
+        background-color: antiquewhite;
+        box-shadow: black 5px 4px;
+        border: 4px solid transparent;
+    }
+
+    .resultofsearch:active {
+        box-shadow: black 2px 1px;
+        border: 3.2px solid transparent;
+    }
+
+/*LISTTEMAN*/
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-contact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 15px;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    background: linear-gradient(white, white) padding-box, linear-gradient(90deg, #3B82F6, #24bd99, #9624bd) border-box;
+    background-size: 500% 500%;
+    animation: gradiasigerak 3s ease infinite;
+    transition: all 0.2s ease;
+    box-shadow: 8px 6px 0 black;
+    cursor: pointer;
+}
+
+    .item-contact:hover {
+        background-color: antiquewhite;
+        box-shadow: black 5px 4px;
+        border: 4px solid transparent;
+    }
+
+    .item-contact:active {
+        box-shadow: black 2px 1px;
+        border: 3.2px solid transparent;
+    }
+
+
+/*ChatPages*/
+.chat-page {
+    display: none;
+    flex-direction: column;
+    align-content: center;
+    margin-bottom: 90px;
+}
+
+.chat-page h1 {
+    text-align: center;
+}
+
+.pesan {
+    display: flex;
+    flex-direction: column;
+    max-width: 50vh;
+    width: fit-content;
+    padding: 10px;
+    border: solid;
+    background-color: var(--warna-chat-self);
+    border-radius: 20px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+    .pesan p {
+        margin: 0 5px 5px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+.pesan img {
+    width: 40vh;
+    height: 40vh;
+    align-self: center;
+    margin: 10px;
+}
+
+.chat-list {
+   display: flex;
+   flex-direction: column;
+   margin: 50px;
+}
+
+.nick_pengirim {
+    
+}
+
+#id_pengirim {
+    align-self: flex-start;
+    margin: 10px;
+    border: 3px solid transparent;
+    background-color: cadetblue;
+    background: linear-gradient(--warna-chat-pengirim) padding-box, linear-gradient(120deg, #3B82F6, #24bd99, #9624bd) border-box;
+    box-shadow: 8px 6px 0 black;
+}
+
+    #id_pengirim h2 {
+        font-size: 20px;
+        text-align: right;
+        align-self: flex-end;
+        margin: 0 5px 5px;
+    }
+
+    #id_pengirim p {
+        text-align: left;
+        align-self: flex-end;
+        margin: 0 5px 5px;
+    }
+
+
+#self_pengirim {
+    align-self: flex-end;
+    margin: 10px;
+    border: 3px solid transparent;
+    background: linear-gradient(--warna-chat-self) padding-box, linear-gradient(120deg, green, yellow, pink) border-box;
+    box-shadow: 8px 6px 0 black;
+}
+
+    #self_pengirim h2 {
+        font-size: 20px;
+        align-self: flex-start;
+        margin: 0 5px 5px;
+    }
+
+    #self_pengirim p {
+        align-self: flex-start;
+        margin: 0 5px 5px;
+    }
+
+.entry {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    min-height: 45px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 8px;
+    border: 2px solid black;
+    border-radius: 25px;
+    background-color: white;
+}
+
+.input-entry {
+    flex: 1;
+    min-height: 25px;
+    max-height: 150px;
+    padding: 8px;
+    resize: none;
+    overflow-y: auto;
+    border: none;
+    outline: none;
+}
+
+.btn-stc,
+.btn-input-chat {
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 12px;
+    border: 2px solid black;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.btn-input-chat {
+    width: 45px;
+    padding: 0;
+}
+
+    .btn-stc:active,
+    .btn-input-chat:active {
+        transform: scale(1.05);
+        background-color: aquamarine;
+    }
+
+.stiker-item {
+    position: fixed;
+    bottom: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    max-height: 300px;
+    padding: 15px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 10px;
+    overflow-y: auto;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 20px;
+}
+
+.input-stc-name-in-tenor {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 15px;
+    outline: none;
+}
+
+.stiker {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    cursor: pointer;
+}
+
+
+.about-page {
+    display: none;
+}
+
+/*Settings*/
+.settings-page {
+    display:  none;
+    flex-direction: column;
+    margin: 20px;
+}
+
+.settings-page h1 {
+    font: bold;
+}
+
+.setting-item {
+    display: flex;
+    margin: 10px;
+    background-color: darkcyan;
+    height: 10vh;
+
+    border: darkblue 5px groove;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.setting-item p {
+    font-size: 30px;
+    margin: 10px;
+    justify-content: center;
+}
+
+#set-nick:hover {
+    background-color: aliceblue;
+    border: inset;
+}
+
+#set-nick:active {
+    background-color: blanchedalmond;
+    border: double;
+    scale: 1.1;
+}
+
+#set-tema {
+    background-color: burlywood;
+    border: 3px solid;
+}
+
+#set-tema:hover {
+    background-color: chocolate;
+    border: 3px solid;
+}
+
+#set-tema:active {
+    background-color: coral;
+    scale: 1.05;
+}
+
+#logout-set {
+    background-color: red;
+    border: 3px dotted;
+}
+
+#logout-set:hover {
+    background-color: orangered;
+    border: 5px dotted;
+}
+
+#logout-set:active {
+    background-color: brown;
+    border: solid;
+}
+
+
+
+/*keyframes*/
+
+@keyframes gradiasigerak {
+    0% {
+        background-position: 0% 50%;
+    }
+    20% {
+        background-position: 100% 50%;
+    }
+    50% {
+        background-position: 500% 400%;
+    }
+
+    80% {
+        background-position: 300% 200%;
+    }
+
+    90% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+.waktu-pesan {
+    font-size: 11px;
+    opacity: 0.7;
+    align-self: flex-end;
+    margin: 0 5px 0;
+}
+
+.aksi-pesan {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+    justify-content: flex-end;
+}
+
+    .aksi-pesan button {
+        border: none;
+        padding: 4px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+
+.reply-preview {
+    position: fixed;
+    bottom: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    min-height: 55px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 15px;
+    box-sizing: border-box;
+}
+
+.reply-preview-text {
+    min-width: 0;
+}
+
+    .reply-preview-text span {
+        font-size: 12px;
+        opacity: 0.6;
+    }
+
+    .reply-preview-text p {
+        margin: 3px 0 0;
+        font-size: 14px;
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.reply-preview button {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.reply-dalam-pesan {
+    padding: 6px 10px;
+    margin-bottom: 7px;
+    border-left: 3px solid black;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    opacity: 0.65;
+}
+
+    .reply-dalam-pesan p {
+        margin: 0;
+        font-size: 12px;
+        opacity: 0.8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }

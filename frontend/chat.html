@@ -1,0 +1,191 @@
+﻿
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="Styles.css">
+
+    <title>CHAT</title>
+</head>
+
+<body>
+
+
+    <button class="hamburger" id="hamburger">
+        ☰
+    </button>
+
+
+
+    <nav class="sidebar" id="sidebar">
+
+        <div class="logo">
+            <h2>CHAT</h2>
+            <p id="namaUser">Memuat...</p>
+        </div>
+
+        <div class="menu">
+
+            <a href="#" class="menu-item home-menu active">
+                <span>⌂</span>
+                <p>Home</p>
+            </a>
+
+            <a href="#" class="menu-item chat-menu">
+                <span>()</span>
+                <p>CHAT</p>
+            </a>
+
+            <a href="#" class="menu-item about-menu">
+                <span>ℹ</span>
+                <p>About</p>
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <a href="#" class="menu-item setting-menu">
+                <span>⚙</span>
+                <p>Settings</p>
+            </a>
+
+        </div>
+
+    </nav>
+
+
+ 
+
+    <div class="contact" id="contact">
+
+        <div class="cnt">
+
+            <div class="home-header">
+
+                <h1>Home</h1>
+
+                <p>
+                    Selamat datang di CHUT.
+                </p>
+
+            </div>
+
+
+            <div class="add-friend">
+
+                <h2>𝐓𝐚𝐦𝐛𝐚𝐡 𝐓𝐞𝐦𝐚𝐧</h2>
+
+                <p>
+                    Cari teman berdasarkan nickname atau ID pengguna.
+                </p>
+
+                <div class="search-friend">
+
+                    <input type="text"
+                           id="friendSearch"
+                           placeholder="Nickname atau ID pengguna">
+
+                    <button id="searchFriend">
+                        Cari
+                    </button>
+
+                </div>
+
+                <div class="search-result"
+                     id="searchResult">
+                        
+                </div>
+
+            </div>
+
+
+            <h2>Teman</h2>
+
+            <div id="contactList" class="contact-items">
+                <div class="item-contact" id="items" role="button">
+                    <img src="" />
+                    <h3>Rusdi Curington</h3>
+                </div>
+                <div class="item-contact" id="items" role="button">
+                    <img src="" />
+                    <h3>Rusdi Curington</h3>
+                </div>
+                <div class="item-contact" id="items" role="button">
+                    <img src="" />
+                    <h3>Rusdi Curington</h3>
+                </div>
+                <div class="item-contact" id="items" role="button">
+                    <img src="" />
+                    <h3>Rusdi Curington</h3>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="page chat-page">
+        <h1 id="chatTitle">Chat</h1>
+
+        <div class="chat-list" id="chatList">
+
+        </div>
+
+        <div class="reply-preview" id="replyPreview">
+            <div class="reply-preview-text">
+                <span>Membalas</span>
+                <p id="replyPreviewText"></p>
+            </div>
+
+            <button id="cancelReply">X</button>
+        </div>
+        <div class="entry">
+            <textarea class="input-entry"></textarea>
+            <button class="btn-stc">Sticker</button>
+            <button class="btn-input-chat">>>></button>
+        </div>
+
+        <div class="stiker-item">
+            <input class="input-stc-name-in-tenor"
+                   placeholder="Cari Stiker (jomok) jelas ada" />
+
+            <img class="stiker" src="Gorengan.png" />
+            <img class="stiker" src="diskusi.png" />
+        </div>
+    </div>
+
+    <div class="page about-page">
+        <h1>About CHUT</h1>
+        <p>CHUT adalah aplikasi chatting sederhana.</p>
+    </div>
+
+    <div class="page settings-page">
+        <h1>Settings</h1>
+
+        <div class="setting-item" id="set-nick">
+            <p>Profile</p>
+        </div>
+
+        <div class="setting-item" id="set-tema">
+            <p>Tema</p>
+            
+        </div>
+
+        <div class="setting-item" id="logout-set">
+            <p>Logout</p>
+        </div>
+    </div>
+
+    <script src="Script.js"></script>
+
+</body>
+
+</html>
+

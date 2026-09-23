@@ -1113,13 +1113,7 @@ app.post(
 // 404
 // ========================================
 
-app.use((req, res) => {
 
-    res.status(404).send(
-        "Halaman atau endpoint tidak ditemukan."
-    );
-
-});
 
 
 // ========================================

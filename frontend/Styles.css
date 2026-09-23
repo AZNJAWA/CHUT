@@ -605,6 +605,9 @@ body {
     }
 }
 
+.isipesan {
+    white-space: pre-wrap;
+}
 
 .waktu-pesan {
     font-size: 11px;

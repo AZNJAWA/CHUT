@@ -47,7 +47,7 @@ function cekLogin(req, res, next) {
         const token = req.cookies.token;
 
         if (!token) {
-            return res.redirect("/Login.html");
+            return res.redirect("/login.html");
         }
 
         const decoded = jwt.verify(
@@ -60,7 +60,7 @@ function cekLogin(req, res, next) {
         next();
 
     } catch (error) {
-        return res.redirect("/Login.html");
+        return res.redirect("/login.html");
     }
 }
 

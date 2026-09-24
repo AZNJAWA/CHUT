@@ -45,7 +45,9 @@ function cekLogin(req, res, next) {
     }
 }
 
-app.use(express.static("frontend", {
+const frontendPath = path.join(__dirname, "frontend");
+
+app.use(express.static(frontendPath, {
     index: false
 }));
 

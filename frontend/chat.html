@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -147,17 +147,47 @@
             <button id="cancelReply">X</button>
         </div>
         <div class="entry">
-            <textarea class="input-entry"></textarea>
-            <button class="btn-stc">Sticker</button>
-            <button class="btn-input-chat">>>></button>
+
+            <textarea class="input-entry"
+                      placeholder="Ketik pesan..."></textarea>
+
+            <button class="btn-stc" id="btnStiker">
+                Sticker
+            </button>
+
+            <button class="btn-input-chat">
+                >>>
+            </button>
+
         </div>
 
-        <div class="stiker-item">
-            <input class="input-stc-name-in-tenor"
-                   placeholder="Cari Stiker (jomok) jelas ada" />
 
-            <img class="stiker" src="Gorengan.png" />
-            <img class="stiker" src="diskusi.png" />
+        <div class="stiker-item" id="stikerPanel">
+
+            <div class="stiker-header">
+
+                <input class="input-stc-name-in-tenor"
+                       id="cariStiker"
+                       placeholder="Cari stiker..." />
+
+                <button id="tambahStiker">
+                    +
+                </button>
+
+            </div>
+
+
+            <div class="stiker-list" id="stikerList">
+
+
+            </div>
+
+
+            <input type="file"
+                   id="inputStiker"
+                   accept="image/png,image/jpeg,image/webp,image/gif"
+                   hidden>
+
         </div>
     </div>
 

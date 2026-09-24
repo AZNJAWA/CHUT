@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --warna-chat-pengirim: cadetblue;
     --warna-chat-self: cornflowerblue;
 
@@ -471,22 +471,7 @@ body {
         background-color: aquamarine;
     }
 
-.stiker-item {
-    position: fixed;
-    bottom: 85px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70%;
-    max-height: 300px;
-    padding: 15px;
-    display: none;
-    flex-wrap: wrap;
-    gap: 10px;
-    overflow-y: auto;
-    background-color: white;
-    border: 2px solid black;
-    border-radius: 20px;
-}
+
 
 .input-stc-name-in-tenor {
     width: 100%;
@@ -691,3 +676,68 @@ body {
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+.stiker-item {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    max-height: 300px;
+    padding: 12px;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 15px;
+    box-sizing: border-box;
+    display: none;
+    z-index: 100;
+}
+
+    .stiker-item.buka {
+        display: block;
+    }
+
+.stiker-header {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.input-stc-name-in-tenor {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#tambahStiker {
+    width: 40px;
+    border: 2px solid black;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+}
+
+.stiker-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.stiker-pesan {
+    width: 150px;
+    height: 150px;
+    max-width: 100%;
+    display: block;
+    object-fit: contain;
+    align-self: center;
+}
+
+.stiker {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    cursor: pointer;
+    border-radius: 10px;
+}

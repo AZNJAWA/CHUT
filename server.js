@@ -1,3 +1,4 @@
+require("dotenv").config();
 
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -5,42 +6,21 @@ const cors = require("cors");
 const { createClient } = require("@libsql/client");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const path = require("path");
+const multer = require("multer");
+const supabase = require("./supabase");
 
-require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+app.use(cookieParser());
 
 // ========================================
 // MIDDLEWARE
 // ========================================
 
-app.use(cookieParser());
-
 app.use(cors());
-
 app.use(express.json());
 
-
-// ========================================
-// STATIC FRONTEND
-// ========================================
-
-app.use(
-    express.static(
-        path.join(__dirname, "frontend"),
-        {
-            index: false
-        }
-    )
-);
-
-
-// ========================================
-// AUTH MIDDLEWARE
-// ========================================
 
 function cekLogin(req, res, next) {
     try {
@@ -64,10 +44,9 @@ function cekLogin(req, res, next) {
     }
 }
 
-
-// ========================================
-// HOME
-// ========================================
+app.use(express.static("frontend", {
+    index: false
+}));
 
 app.get("/", async (req, res) => {
     try {
@@ -90,19 +69,11 @@ app.get("/", async (req, res) => {
 });
 
 
-// ========================================
-// CHAT PAGE
-// ========================================
-
 app.get("/chat.html", cekLogin, (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "frontend",
-            "chat.html"
-        )
-    );
+    res.sendFile(__dirname + "/frontend/chat.html");
 });
+
+
 
 
 // ========================================
@@ -120,30 +91,24 @@ const db = createClient({
 // ========================================
 
 app.post("/login", async (req, res) => {
+
     try {
 
-        const {
-            email,
-            password
-        } = req.body;
+        const { email, password } = req.body;
 
 
-        // -----------------------------
         // Cek input
-        // -----------------------------
-
         if (!email || !password) {
+
             return res.status(400).json({
                 berhasil: false,
                 pesan: "Email dan password wajib diisi"
             });
+
         }
 
 
-        // -----------------------------
-        // Cari user
-        // -----------------------------
-
+        // Cari user berdasarkan email
         const hasil = await db.execute({
             sql: `
                 SELECT *
@@ -154,43 +119,37 @@ app.post("/login", async (req, res) => {
         });
 
 
-        // -----------------------------
         // User tidak ditemukan
-        // -----------------------------
-
         if (hasil.rows.length === 0) {
+
             return res.status(401).json({
                 berhasil: false,
                 pesan: "Email atau password salah"
             });
+
         }
 
 
+        // Ambil data user
         const user = hasil.rows[0];
 
 
-        // -----------------------------
         // Cek password
-        // -----------------------------
-
-        const passwordBenar =
-            await bcrypt.compare(
-                password,
-                user.password
-            );
+        const passwordBenar = await bcrypt.compare(
+            password,
+            user.password
+        );
 
 
+        // Password salah
         if (!passwordBenar) {
+
             return res.status(401).json({
                 berhasil: false,
                 pesan: "Email atau password salah"
             });
+
         }
-
-
-        // -----------------------------
-        // Buat JWT
-        // -----------------------------
 
         const token = jwt.sign(
             {
@@ -202,38 +161,16 @@ app.post("/login", async (req, res) => {
             }
         );
 
-
-        // -----------------------------
-        // Cookie
-        // -----------------------------
-
-        res.cookie(
-            "token",
-            token,
-            {
-                httpOnly: true,
-
-                // Lokal HTTP = false
-                // Vercel HTTPS = true
-                secure:
-                    process.env.NODE_ENV === "production",
-
-                sameSite: "lax",
-
-                maxAge:
-                    24 * 60 * 60 * 1000
-            }
-        );
-
-
-        // -----------------------------
-        // Response
-        // -----------------------------
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000
+        });
 
         res.json({
             berhasil: true,
             pesan: "Login berhasil",
-
             user: {
                 id: user.id,
                 nama: user.nama,
@@ -242,19 +179,23 @@ app.post("/login", async (req, res) => {
             }
         });
 
+
+
     } catch (error) {
 
-        console.error(
-            "Error login:",
-            error
-        );
+        console.error("Error login:", error);
+
 
         res.status(500).json({
             berhasil: false,
             pesan: "Terjadi kesalahan pada server"
         });
+
     }
+
 });
+
+
 
 
 // ========================================
@@ -264,49 +205,25 @@ app.post("/login", async (req, res) => {
 app.post("/register", async (req, res) => {
     try {
 
-        const {
-            nama,
-            email,
-            password
-        } = req.body;
+        const { nama, email, password } = req.body;
 
+        console.log("Data register:", req.body);
 
-        console.log(
-            "Data register:",
-            req.body
-        );
-
-
-        // -----------------------------
-        // Cek input
-        // -----------------------------
-
-        if (
-            !nama ||
-            !email ||
-            !password
-        ) {
+        if (!nama || !email || !password) {
             return res.status(400).json({
                 berhasil: false,
                 pesan: "Semua data wajib diisi"
             });
         }
 
-
-        // -----------------------------
-        // Cek email
-        // -----------------------------
-
-        const cekUser =
-            await db.execute({
-                sql: `
-                    SELECT id
-                    FROM pengguna
-                    WHERE email = ?
-                `,
-                args: [email]
-            });
-
+        const cekUser = await db.execute({
+            sql: `
+                SELECT id
+                FROM pengguna
+                WHERE email = ?
+            `,
+            args: [email]
+        });
 
         if (cekUser.rows.length > 0) {
             return res.status(409).json({
@@ -315,30 +232,12 @@ app.post("/register", async (req, res) => {
             });
         }
 
-
-        // -----------------------------
-        // Hash password
-        // -----------------------------
-
-        const passwordHash =
-            await bcrypt.hash(
-                password,
-                10
-            );
-
-
-        // -----------------------------
-        // Insert user
-        // -----------------------------
+        const passwordHash = await bcrypt.hash(password, 10);
 
         await db.execute({
             sql: `
                 INSERT INTO pengguna
-                (
-                    nama,
-                    email,
-                    password
-                )
+                (nama, email, password)
                 VALUES (?, ?, ?)
             `,
             args: [
@@ -348,7 +247,6 @@ app.post("/register", async (req, res) => {
             ]
         });
 
-
         res.json({
             berhasil: true,
             pesan: "Akun berhasil dibuat"
@@ -356,10 +254,7 @@ app.post("/register", async (req, res) => {
 
     } catch (error) {
 
-        console.error(
-            "Error register:",
-            error
-        );
+        console.error("Error register:", error);
 
         res.status(500).json({
             berhasil: false,
@@ -368,17 +263,10 @@ app.post("/register", async (req, res) => {
     }
 });
 
-
-// ========================================
-// ME
-// ========================================
-
+//me
 app.get("/me", async (req, res) => {
     try {
-
-        const token =
-            req.cookies.token;
-
+        const token = req.cookies.token;
 
         if (!token) {
             return res.status(401).json({
@@ -387,28 +275,19 @@ app.get("/me", async (req, res) => {
             });
         }
 
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-        const decoded =
-            jwt.verify(
-                token,
-                process.env.JWT_SECRET
-            );
-
-
-        const hasil =
-            await db.execute({
-                sql: `
-                    SELECT
-                        id,
-                        nama,
-                        email,
-                        id_pengguna
-                    FROM pengguna
-                    WHERE id = ?
-                `,
-                args: [decoded.id]
-            });
-
+        const hasil = await db.execute({
+            sql: `
+                SELECT id, nama, email, id_pengguna
+                FROM pengguna
+                WHERE id = ?
+            `,
+            args: [decoded.id]
+        });
 
         if (hasil.rows.length === 0) {
             return res.status(404).json({
@@ -417,727 +296,568 @@ app.get("/me", async (req, res) => {
             });
         }
 
-
         res.json({
             berhasil: true,
             user: hasil.rows[0]
         });
 
     } catch (error) {
-
         return res.status(401).json({
             berhasil: false,
-            pesan:
-                "Token tidak valid atau sudah expired"
+            pesan: "Token tidak valid atau sudah expired"
         });
     }
 });
 
+app.get("/cari-teman", cekLogin, async (req, res) => {
+    try {
+        const q = req.query.q;
 
-// ========================================
-// CARI TEMAN
-// ========================================
-
-app.get(
-    "/cari-teman",
-    cekLogin,
-    async (req, res) => {
-
-        try {
-
-            const q =
-                req.query.q;
-
-
-            if (!q) {
-                return res.json({
-                    berhasil: false,
-                    pesan: "Pencarian kosong"
-                });
-            }
-
-
-            const hasil =
-                await db.execute({
-                    sql: `
-                        SELECT
-                            id,
-                            nama,
-                            id_pengguna
-                        FROM pengguna
-                        WHERE
-                            nama LIKE ?
-                            OR id_pengguna LIKE ?
-                        LIMIT 10
-                    `,
-                    args: [
-                        `%${q}%`,
-                        `%${q}%`
-                    ]
-                });
-
-
-            const hasilFilter =
-                hasil.rows.filter(
-                    user =>
-                        Number(user.id) !==
-                        Number(req.userId)
-                );
-
-
-            res.json({
-                berhasil: true,
-                pengguna: hasilFilter
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
+        if (!q) {
+            return res.json({
                 berhasil: false,
-                pesan:
-                    "Gagal mencari pengguna"
+                pesan: "Pencarian kosong"
             });
         }
+
+        const hasil = await db.execute({
+            sql: `
+                SELECT id, nama, id_pengguna
+                FROM pengguna
+                WHERE nama LIKE ?
+                    OR id_pengguna LIKE ?
+                LIMIT 10
+            `,
+            args: [`%${q}%`, `%${q}%`]
+        });
+
+        const hasilFilter = hasil.rows.filter(
+            user => Number(user.id) !== Number(req.userId)
+        );
+
+        res.json({
+            berhasil: true,
+            pengguna: hasilFilter
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mencari pengguna"
+        });
     }
-);
+});
 
+app.post("/teman", cekLogin, async (req, res) => {
+    try {
+        const { id_teman } = req.body;
 
-// ========================================
-// TAMBAH TEMAN
-// ========================================
-
-app.post(
-    "/teman",
-    cekLogin,
-    async (req, res) => {
-
-        try {
-
-            const {
-                id_teman
-            } = req.body;
-
-
-            if (!id_teman) {
-                return res.status(400).json({
-                    berhasil: false,
-                    pesan:
-                        "ID teman tidak ada"
-                });
-            }
-
-
-            // Tidak boleh tambah diri sendiri
-
-            if (
-                Number(id_teman) ===
-                Number(req.userId)
-            ) {
-                return res.status(400).json({
-                    berhasil: false,
-                    pesan:
-                        "Tidak bisa menambahkan diri sendiri"
-                });
-            }
-
-
-            // Cek user
-
-            const cekUser =
-                await db.execute({
-                    sql: `
-                        SELECT id
-                        FROM pengguna
-                        WHERE id = ?
-                    `,
-                    args: [id_teman]
-                });
-
-
-            if (
-                cekUser.rows.length === 0
-            ) {
-                return res.status(404).json({
-                    berhasil: false,
-                    pesan:
-                        "Pengguna tidak ditemukan"
-                });
-            }
-
-
-            // Buat relasi dua arah
-
-            await db.execute({
-                sql: `
-                    INSERT OR IGNORE INTO teman
-                    (
-                        id_pengguna,
-                        id_teman
-                    )
-                    VALUES
-                        (?, ?),
-                        (?, ?)
-                `,
-                args: [
-                    req.userId,
-                    id_teman,
-
-                    id_teman,
-                    req.userId
-                ]
-            });
-
-
-            res.json({
-                berhasil: true,
-                pesan:
-                    "Teman berhasil ditambahkan"
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
+        if (!id_teman) {
+            return res.status(400).json({
                 berhasil: false,
-                pesan:
-                    "Gagal menambahkan teman"
+                pesan: "ID teman tidak ada"
             });
         }
-    }
-);
 
-
-// ========================================
-// DAFTAR TEMAN
-// ========================================
-
-app.get(
-    "/teman",
-    cekLogin,
-    async (req, res) => {
-
-        try {
-
-            const hasil =
-                await db.execute({
-                    sql: `
-                        SELECT
-                            p.id,
-                            p.nama,
-                            p.id_pengguna
-                        FROM teman t
-
-                        JOIN pengguna p
-                            ON p.id = t.id_teman
-
-                        WHERE
-                            t.id_pengguna = ?
-
-                        ORDER BY
-                            p.nama ASC
-                    `,
-                    args: [req.userId]
-                });
-
-
-            res.json({
-                berhasil: true,
-                teman: hasil.rows
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
+        if (Number(id_teman) === Number(req.userId)) {
+            return res.status(400).json({
                 berhasil: false,
-                pesan:
-                    "Gagal mengambil daftar teman"
+                pesan: "Tidak bisa menambahkan diri sendiri"
             });
         }
+
+        const cekUser = await db.execute({
+            sql: `
+                SELECT id
+                FROM pengguna
+                WHERE id = ?
+            `,
+            args: [id_teman]
+        });
+
+        if (cekUser.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Pengguna tidak ditemukan"
+            });
+        }
+
+        await db.execute({
+            sql: `
+                INSERT OR IGNORE INTO teman
+                (id_pengguna, id_teman)
+                VALUES (?, ?), (?, ?)
+            `,
+            args: [
+                req.userId,
+                id_teman,
+                id_teman,
+                req.userId
+            ]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Teman berhasil ditambahkan"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menambahkan teman"
+        });
     }
-);
+});
 
-
-// ========================================
-// AMBIL PESAN
-// ========================================
-
-app.get(
-    "/pesan/:id_teman",
-    cekLogin,
-    async (req, res) => {
-
-        try {
-
-            const idTeman =
-                req.params.id_teman;
-
-            const before =
-                req.query.before;
-
-
-            let sql = `
+app.get("/teman", cekLogin, async (req, res) => {
+    try {
+        const hasil = await db.execute({
+            sql: `
                 SELECT
                     p.id,
-                    p.id_pengirim,
-                    p.isi,
-                    p.tanggal_waktu,
-                    p.id_penerima,
-                    p.id_pesan_reply,
+                    p.nama,
+                    p.id_pengguna
+                FROM teman t
+                JOIN pengguna p
+                    ON p.id = t.id_teman
+                WHERE t.id_pengguna = ?
+                ORDER BY p.nama ASC
+            `,
+            args: [req.userId]
+        });
 
-                    r.isi
-                        AS isi_pesan_reply
+        res.json({
+            berhasil: true,
+            teman: hasil.rows
+        });
 
-                FROM pesan p
+    } catch (error) {
+        console.error(error);
 
-                LEFT JOIN pesan r
-                    ON r.id =
-                       p.id_pesan_reply
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil daftar teman"
+        });
+    }
+});
 
-                WHERE
-                    (
-                        (
-                            p.id_pengirim = ?
-                            AND
-                            p.id_penerima = ?
-                        )
+app.get("/pesan/:id_teman", cekLogin, async (req, res) => {
+    try {
+        const idTeman = req.params.id_teman;
+        const before = req.query.before;
 
-                        OR
+        let sql = `
+            SELECT
+                p.id,
+                p.id_pengirim,
+                p.isi,
+                p.tanggal_waktu,
+                p.id_penerima,
+                p.id_pesan_reply,
+                p.tipe,
+                r.isi AS isi_pesan_reply
+            FROM pesan p
+            LEFT JOIN pesan r
+                ON r.id = p.id_pesan_reply
+            WHERE
+                (
+                    (p.id_pengirim = ? AND p.id_penerima = ?)
+                    OR
+                    (p.id_pengirim = ? AND p.id_penerima = ?)
+                )
+        `;
 
-                        (
-                            p.id_pengirim = ?
-                            AND
-                            p.id_penerima = ?
-                        )
-                    )
-            `;
+        const args = [
+            req.userId,
+            idTeman,
+            idTeman,
+            req.userId
+        ];
 
-
-            const args = [
-                req.userId,
-                idTeman,
-
-                idTeman,
-                req.userId
-            ];
-
-
-            // -----------------------------
-            // Pagination
-            // -----------------------------
-
-            if (before) {
-
-                sql += `
-                    AND p.id < ?
-                `;
-
-                args.push(before);
-            }
-
-
+        if (before) {
             sql += `
-                ORDER BY
-                    p.id DESC
-
-                LIMIT 20
+                AND p.id < ?
             `;
 
+            args.push(before);
+        }
 
-            const hasil =
-                await db.execute({
-                    sql,
-                    args
-                });
+        sql += `
+            ORDER BY p.id DESC
+            LIMIT 20
+        `;
 
+        const hasil = await db.execute({
+            sql,
+            args
+        });
 
-            const pesan =
-                hasil.rows.reverse();
+        const pesan = hasil.rows.reverse();
 
+        res.json({
+            berhasil: true,
+            pesan: pesan,
+            adaLagi: hasil.rows.length === 20
+        });
 
-            res.json({
-                berhasil: true,
+    } catch (error) {
+        console.error(error);
 
-                pesan: pesan,
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil pesan"
+        });
+    }
+});
+app.patch("/pesan/:id", cekLogin, async (req, res) => {
+    try {
+        const idPesan = req.params.id;
+        const { isi } = req.body;
 
-                adaLagi:
-                    hasil.rows.length === 20
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
+        if (!isi || !isi.trim()) {
+            return res.status(400).json({
                 berhasil: false,
-                pesan:
-                    "Gagal mengambil pesan"
+                pesan: "Pesan tidak boleh kosong"
             });
         }
+
+        const cekPesan = await db.execute({
+            sql: `
+                SELECT id
+                FROM pesan
+                WHERE id = ?
+                    AND id_pengirim = ?
+            `,
+            args: [
+                idPesan,
+                req.userId
+            ]
+        });
+
+        if (cekPesan.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Pesan tidak ditemukan"
+            });
+        }
+
+        await db.execute({
+            sql: `
+                UPDATE pesan
+                SET isi = ?
+                WHERE id = ?
+                    AND id_pengirim = ?
+            `,
+            args: [
+                isi.trim(),
+                idPesan,
+                req.userId
+            ]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Pesan berhasil diedit"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengedit pesan"
+        });
     }
-);
+});
 
+app.delete("/pesan/:id", cekLogin, async (req, res) => {
+    try {
+        const idPesan = req.params.id;
 
-// ========================================
-// EDIT PESAN
-// ========================================
+        const cekPesan = await db.execute({
+            sql: `
+                SELECT id
+                FROM pesan
+                WHERE id = ?
+                    AND id_pengirim = ?
+            `,
+            args: [
+                idPesan,
+                req.userId
+            ]
+        });
 
-app.patch(
-    "/pesan/:id",
-    cekLogin,
-    async (req, res) => {
+        if (cekPesan.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Pesan tidak ditemukan"
+            });
+        }
 
-        try {
+        await db.execute({
+            sql: `
+                DELETE FROM pesan
+                WHERE id = ?
+                    AND id_pengirim = ?
+            `,
+            args: [
+                idPesan,
+                req.userId
+            ]
+        });
 
-            const idPesan =
-                req.params.id;
+        res.json({
+            berhasil: true,
+            pesan: "Pesan berhasil dihapus"
+        });
 
-            const {
-                isi
-            } = req.body;
+    } catch (error) {
+        console.error(error);
 
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menghapus pesan"
+        });
+    }
+});
 
-            if (
-                !isi ||
-                !isi.trim()
-            ) {
-                return res.status(400).json({
-                    berhasil: false,
-                    pesan:
-                        "Pesan tidak boleh kosong"
-                });
-            }
+app.post("/pesan", cekLogin, async (req, res) => {
+    try {
+        const {
+            id_penerima,
+            isi,
+            id_pesan_reply,
+            tipe = "teks"
+        } = req.body;
 
+        console.log("BODY PESAN:", req.body);
+        console.log("ID REPLY:", id_pesan_reply);
 
-            // Pastikan pesan milik user
+        if (!["teks", "stiker"].includes(tipe)) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Tipe pesan tidak valid"
+            });
+        }
 
-            const cekPesan =
-                await db.execute({
-                    sql: `
-                        SELECT id
-                        FROM pesan
-                        WHERE
-                            id = ?
-                            AND
-                            id_pengirim = ?
-                    `,
-                    args: [
-                        idPesan,
-                        req.userId
-                    ]
-                });
+        if (!id_penerima || !isi || !isi.trim()) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Pesan tidak boleh kosong"
+            });
+        }
 
+        if (Number(id_penerima) === Number(req.userId)) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Tidak bisa mengirim pesan ke diri sendiri"
+            });
+        }
 
-            if (
-                cekPesan.rows.length === 0
-            ) {
+        // Kalau ini reply, pastikan pesan yang direply memang ada
+        if (id_pesan_reply) {
+            const cekReply = await db.execute({
+                sql: `
+                    SELECT id
+                    FROM pesan
+                    WHERE id = ?
+                `,
+                args: [id_pesan_reply]
+            });
+
+            if (cekReply.rows.length === 0) {
                 return res.status(404).json({
                     berhasil: false,
-                    pesan:
-                        "Pesan tidak ditemukan"
+                    pesan: "Pesan yang direply tidak ditemukan"
                 });
             }
-
-
-            // Update
-
-            await db.execute({
-                sql: `
-                    UPDATE pesan
-                    SET isi = ?
-
-                    WHERE
-                        id = ?
-                        AND
-                        id_pengirim = ?
-                `,
-                args: [
-                    isi.trim(),
-                    idPesan,
-                    req.userId
-                ]
-            });
-
-
-            res.json({
-                berhasil: true,
-                pesan:
-                    "Pesan berhasil diedit"
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
-                berhasil: false,
-                pesan:
-                    "Gagal mengedit pesan"
-            });
         }
+
+        await db.execute({
+            sql: ` 
+                INSERT INTO pesan 
+                ( 
+                    id_pengirim, 
+                    isi, 
+                    tanggal_waktu, 
+                    id_penerima, 
+                    id_pesan_reply,
+                    tipe
+                ) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            `,
+            args: [
+                req.userId,
+                isi.trim(),
+                new Date().toISOString(),
+                id_penerima,
+                id_pesan_reply || null,
+                tipe
+            ]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Pesan berhasil dikirim"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengirim pesan"
+        });
     }
-);
+});
 
+const upload = multer({
+    storage: multer.memoryStorage(),
 
-// ========================================
-// HAPUS PESAN
-// ========================================
+    limits: {
+        fileSize: 6 * 1024 * 1024
+    },
 
-app.delete(
-    "/pesan/:id",
-    cekLogin,
-    async (req, res) => {
-
-        try {
-
-            const idPesan =
-                req.params.id;
-
-
-            // Pastikan pesan milik user
-
-            const cekPesan =
-                await db.execute({
-                    sql: `
-                        SELECT id
-                        FROM pesan
-                        WHERE
-                            id = ?
-                            AND
-                            id_pengirim = ?
-                    `,
-                    args: [
-                        idPesan,
-                        req.userId
-                    ]
-                });
-
-
-            if (
-                cekPesan.rows.length === 0
-            ) {
-                return res.status(404).json({
-                    berhasil: false,
-                    pesan:
-                        "Pesan tidak ditemukan"
-                });
-            }
-
-
-            // Delete
-
-            await db.execute({
-                sql: `
-                    DELETE FROM pesan
-
-                    WHERE
-                        id = ?
-                        AND
-                        id_pengirim = ?
-                `,
-                args: [
-                    idPesan,
-                    req.userId
-                ]
-            });
-
-
-            res.json({
-                berhasil: true,
-                pesan:
-                    "Pesan berhasil dihapus"
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
-                berhasil: false,
-                pesan:
-                    "Gagal menghapus pesan"
-            });
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith("image/")) {
+            return cb(new Error("File harus berupa gambar"));
         }
+
+        cb(null, true);
     }
-);
-
-
-// ========================================
-// KIRIM PESAN
-// ========================================
+});
 
 app.post(
-    "/pesan",
+    "/upload-stiker",
     cekLogin,
+    upload.single("stiker"),
     async (req, res) => {
 
         try {
 
-            const {
-                id_penerima,
-                isi,
-                id_pesan_reply
-            } = req.body;
-
-
-            console.log(
-                "BODY PESAN:",
-                req.body
-            );
-
-            console.log(
-                "ID REPLY:",
-                id_pesan_reply
-            );
-
-
-            // -----------------------------
-            // Validasi
-            // -----------------------------
-
-            if (
-                !id_penerima ||
-                !isi ||
-                !isi.trim()
-            ) {
+            if (!req.file) {
                 return res.status(400).json({
                     berhasil: false,
-                    pesan:
-                        "Pesan tidak boleh kosong"
+                    pesan: "Stiker tidak ditemukan"
                 });
             }
 
+            const namaFile =
+                `stiker/${req.userId}/${Date.now()}-${req.file.originalname}`;
 
-            // Tidak boleh kirim ke diri sendiri
+            const { data, error } =
+                await supabase.storage
+                    .from("stc")
+                    .upload(
+                        namaFile,
+                        req.file.buffer,
+                        {
+                            contentType: req.file.mimetype,
+                            upsert: false
+                        }
+                    );
 
-            if (
-                Number(id_penerima) ===
-                Number(req.userId)
-            ) {
-                return res.status(400).json({
+            if (error) {
+                console.error("Error Supabase:", error);
+
+                return res.status(500).json({
                     berhasil: false,
-                    pesan:
-                        "Tidak bisa mengirim pesan ke diri sendiri"
+                    pesan: "Gagal upload stiker"
                 });
             }
 
-
-            // -----------------------------
-            // Validasi reply
-            // -----------------------------
-
-            if (id_pesan_reply) {
-
-                const cekReply =
-                    await db.execute({
-                        sql: `
-                            SELECT id
-                            FROM pesan
-                            WHERE id = ?
-                        `,
-                        args: [
-                            id_pesan_reply
-                        ]
-                    });
-
-
-                if (
-                    cekReply.rows.length === 0
-                ) {
-                    return res.status(404).json({
-                        berhasil: false,
-                        pesan:
-                            "Pesan yang direply tidak ditemukan"
-                    });
-                }
-            }
-
-
-            // -----------------------------
-            // Insert pesan
-            // -----------------------------
-
-            await db.execute({
-                sql: `
-                    INSERT INTO pesan
-                    (
-                        id_pengirim,
-                        isi,
-                        tanggal_waktu,
-                        id_penerima,
-                        id_pesan_reply
-                    )
-
-                    VALUES
-                    (?, ?, ?, ?, ?)
-                `,
-                args: [
-                    req.userId,
-
-                    isi.trim(),
-
-                    new Date().toISOString(),
-
-                    id_penerima,
-
-                    id_pesan_reply || null
-                ]
-            });
-
+            const { data: urlData } =
+                supabase.storage
+                    .from("stc")
+                    .getPublicUrl(data.path);
 
             res.json({
                 berhasil: true,
-                pesan:
-                    "Pesan berhasil dikirim"
+                path: data.path,
+                url: urlData.publicUrl
             });
 
         } catch (error) {
 
-            console.error(error);
+            console.error("Error upload stiker:", error);
 
             res.status(500).json({
                 berhasil: false,
-                pesan:
-                    "Gagal mengirim pesan"
+                pesan: "Gagal upload stiker"
             });
         }
     }
 );
 
+app.get("/stiker", cekLogin, async (req, res) => {
 
-// ========================================
-// 404
-// ========================================
+    try {
 
+        const folder = `stiker/${req.userId}`;
 
+        const { data, error } =
+            await supabase.storage
+                .from("stc")
+                .list(folder);
 
+        if (error) {
 
-// ========================================
-// LOCAL SERVER / VERCEL
-// ========================================
+            console.error("Error mengambil stiker:", error);
 
-if (require.main === module) {
-
-    app.listen(
-        PORT,
-        () => {
-
-            console.log(
-                `Server CHUT berjalan di http://localhost:${PORT}`
-            );
+            return res.status(500).json({
+                berhasil: false,
+                pesan: "Gagal mengambil stiker"
+            });
 
         }
+
+        const stiker = data.map(file => {
+
+            const path = `${folder}/${file.name}`;
+
+            const { data: urlData } =
+                supabase.storage
+                    .from("stc")
+                    .getPublicUrl(path);
+
+            return {
+                nama: file.name,
+                url: urlData.publicUrl
+            };
+
+        });
+
+        res.json({
+            berhasil: true,
+            stiker: stiker
+        });
+
+    } catch (error) {
+
+        console.error("Error stiker:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil stiker"
+        });
+
+    }
+
+});
+
+
+// ========================================
+// JALANKAN SERVER
+// ========================================
+
+app.listen(PORT, () => {
+
+    console.log(
+        `Server CHUT berjalan di http://localhost:${PORT}`
     );
-}
 
-
-// ========================================
-// EXPORT UNTUK VERCEL
-// ========================================
-
-module.exports = app;
-
+});

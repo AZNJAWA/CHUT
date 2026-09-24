@@ -854,13 +854,6 @@ app.get("/stiker", cekLogin, async (req, res) => {
 // ========================================
 // JALANKAN SERVER
 // ========================================
-
-app.listen(PORT, () => {
-
-    console.log(
-        `Server CHUT berjalan di http://localhost:${PORT}`
-    );
-
-});
+module.exports = app;
 
 

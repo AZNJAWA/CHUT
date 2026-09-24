@@ -7,7 +7,7 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("http://localhost:3000/login", {
+        const response = await fetch("/login", {
             method: "POST",
 
             headers: {
@@ -22,7 +22,13 @@ loginForm.addEventListener("submit", async (event) => {
 
         const data = await response.json();
 
-        console.log(data);
+        if (data.berhasil) {
+            console.log("Login berhasil:", data);
+            window.location.href = "/chat.html";
+            
+        } else {
+            console.log("Login gagal:", data.pesan);
+        }
 
     } catch (error) {
         console.error("Gagal menghubungi server:", error);

@@ -49,6 +49,10 @@ app.use(express.static("frontend", {
     index: false
 }));
 
+app.get("/login.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend", "login.html"));
+});
+
 app.get("/", async (req, res) => {
     try {
         const token = req.cookies.token;

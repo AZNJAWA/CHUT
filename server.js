@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const supabase = require("./supabase");
 
+console.log("bcrypt berhasil dimuat:", typeof bcrypt.compare);
 
 const app = express();
 const PORT = process.env.PORT || 3000;

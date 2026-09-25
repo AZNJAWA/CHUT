@@ -3,44 +3,43 @@ const loginForm = document.getElementById("loginForm");
 console.log("LOGIN JS BERJALAN");
 console.log("FORM:", loginForm);
 
-if (!loginForm) {
-    console.error("Form login tidak ditemukan!");
-} else {
-    loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-        console.log("SUBMIT LOGIN TERPANGGIL");
+    console.log("SUBMIT LOGIN TERPANGGIL");
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-        try {
-            const response = await fetch("/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
+    console.log("SEBELUM FETCH");
 
-            console.log("STATUS:", response.status);
+    try {
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
 
-            const data = await response.json();
+        console.log("FETCH SELESAI");
+        console.log("STATUS:", response.status);
 
-            console.log("RESPONSE:", data);
+        const data = await response.json();
 
-            if (data.berhasil) {
-                console.log("Login berhasil");
-                window.location.href = "/chat.html";
-            } else {
-                console.log("Login gagal:", data.pesan);
-            }
+        console.log("RESPONSE:", data);
 
-        } catch (error) {
-            console.error("Gagal menghubungi server:", error);
+        if (data.berhasil) {
+            console.log("LOGIN BERHASIL");
+            window.location.href = "/chat.html";
+        } else {
+            console.log("LOGIN GAGAL:", data.pesan);
         }
-    });
-}
+
+    } catch (error) {
+        console.error("FETCH ERROR:", error);
+    }
+});

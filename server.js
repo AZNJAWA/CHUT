@@ -1,7 +1,6 @@
 require("dotenv").config();
 
 const express = require("express");
-const path = require("path");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { createClient } = require("@libsql/client");
@@ -9,8 +8,8 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const supabase = require("./supabase");
+const crypto = require("crypto");
 
-console.log("bcrypt berhasil dimuat:", typeof bcrypt.compare);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,15 +45,9 @@ function cekLogin(req, res, next) {
     }
 }
 
-const frontendPath = path.join(__dirname, "frontend");
-
-app.use(express.static(frontendPath, {
+app.use(express.static("frontend", {
     index: false
 }));
-
-app.get("/login.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend", "login.html"));
-});
 
 app.get("/", async (req, res) => {
     try {
@@ -857,10 +850,173 @@ app.get("/stiker", cekLogin, async (req, res) => {
 
 });
 
+app.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email wajib diisi"
+            });
+        }
+
+
+        const result = await db.execute({
+            sql: "SELECT id FROM pengguna WHERE email = ?",
+            args: [email]
+        });
+
+
+        if (result.rows.length === 0) {
+            return res.json({
+                message: "Jika email terdaftar, instruksi reset password telah dibuat."
+            });
+        }
+
+        const idPengguna = result.rows[0].id;
+
+
+        const token = crypto.randomBytes(32).toString("hex");
+
+
+        const expiresAt = Date.now() + 15 * 60 * 1000;
+
+
+        await db.execute({
+            sql: `
+                INSERT INTO reset_password
+                (id_pengguna, token, expires_at)
+                VALUES (?, ?, ?)
+            `,
+            args: [idPengguna, token, expiresAt]
+        });
+
+    
+        const resetLink =
+            `http://localhost:3000/reset-password.html?token=${token}`;
+
+        console.log("=================================");
+        console.log("RESET PASSWORD");
+        console.log(resetLink);
+        console.log("=================================");
+
+        res.json({
+            message: "Jika email terdaftar, instruksi reset password telah dibuat."
+        });
+
+    } catch (error) {
+        console.error("Forgot password error:", error);
+
+        res.status(500).json({
+            message: "Terjadi kesalahan server"
+        });
+    }
+});
+
+app.post("/reset-password", async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Token dan password wajib diisi"
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Password minimal 6 karakter"
+            });
+        }
+
+        // Cari token
+        const hasil = await db.execute({
+            sql: `
+                SELECT id, id_pengguna, expires_at
+                FROM reset_password
+                WHERE token = ?
+            `,
+            args: [token]
+        });
+
+        if (hasil.rows.length === 0) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Token tidak valid"
+            });
+        }
+
+        const reset = hasil.rows[0];
+
+        // Cek expired
+        if (Date.now() > Number(reset.expires_at)) {
+
+            await db.execute({
+                sql: `
+                    DELETE FROM reset_password
+                    WHERE id = ?
+                `,
+                args: [reset.id]
+            });
+
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Token sudah expired"
+            });
+        }
+
+        // Hash password baru
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Update password
+        await db.execute({
+            sql: `
+                UPDATE pengguna
+                SET password = ?
+                WHERE id = ?
+            `,
+            args: [
+                passwordHash,
+                reset.id_pengguna
+            ]
+        });
+
+        // Token hanya boleh dipakai sekali
+        await db.execute({
+            sql: `
+                DELETE FROM reset_password
+                WHERE id = ?
+            `,
+            args: [reset.id]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Password berhasil diubah"
+        });
+
+    } catch (error) {
+
+        console.error("Error reset password:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengubah password"
+        });
+    }
+});
+
 
 // ========================================
 // JALANKAN SERVER
 // ========================================
-module.exports = app;
 
+app.listen(PORT, () => {
 
+    console.log(
+        `Server CHUT berjalan di http://localhost:${PORT}`
+    );
+
+});

@@ -28,7 +28,7 @@ form {
 }
 
 input {
-    box-shadow: inset ghostwhite;
+    box-shadow: inset #dfe6e0, inset #dfe6e0;
     border: solid 1px;
     border-radius: 20px;
     padding: 10px;

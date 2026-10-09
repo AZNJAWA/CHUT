@@ -56,9 +56,7 @@ function cekLogin(req, res, next) {
     }
 }
 
-app.use(express.static("frontend", {
-    index: false
-}));
+app.use(express.static(__dirname));
 
 app.get("/", async (req, res) => {
     try {

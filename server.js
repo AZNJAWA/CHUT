@@ -34,6 +34,10 @@ const emailTransporter = nodemailer.createTransport({
     }
 });
 
+app.get("/tes-chut", (req, res) => {
+    res.status(200).send("CHUT SERVER AKTIF");
+});
+
 function cekLogin(req, res, next) {
     try {
         const token = req.cookies.token;

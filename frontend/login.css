@@ -4,7 +4,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient(50deg, red, blue, green);
+    background-color: #111827;
 }
 
 .login-box {
@@ -16,7 +16,7 @@
     height: 450px;
     align-items: center;
     justify-content: center;
-    background-image: linear-gradient(100deg, blue, lightblue);
+    background-color: white;
     box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.25), 15px 15px 30px rgba(0, 0, 0, 0.2);
 }
 

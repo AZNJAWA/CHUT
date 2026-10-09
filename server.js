@@ -1256,10 +1256,10 @@ app.get("/get-location/:userId", async (req, res) => {
 // JALANKAN SERVER
 // ========================================
 
-app.listen(PORT, () => {
+module.exports = app;
 
-    console.log(
-        `Server CHUT berjalan di http://localhost:${PORT}`
-    );
-
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`CHUT berjalan di port ${PORT}`);
+    });
+}

@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const supabase = require("./supabase");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 
 const app = express();
@@ -22,6 +23,16 @@ app.use(cookieParser());
 app.use(cors());
 app.use(express.json());
 
+
+
+
+const emailTransporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD
+    }
+});
 
 function cekLogin(req, res, next) {
     try {
@@ -856,71 +867,193 @@ app.post("/forgot-password", async (req, res) => {
 
         if (!email) {
             return res.status(400).json({
-                message: "Email wajib diisi"
+                berhasil: false,
+                pesan: "Email wajib diisi"
             });
         }
 
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Format email tidak valid"
+            });
+        }
 
         const result = await db.execute({
             sql: "SELECT id FROM pengguna WHERE email = ?",
             args: [email]
         });
 
-
+        // Always return success message for security (don't reveal if email exists)
         if (result.rows.length === 0) {
             return res.json({
-                message: "Jika email terdaftar, instruksi reset password telah dibuat."
+                berhasil: true,
+                pesan: "Jika email terdaftar, instruksi reset password telah dikirim."
             });
         }
 
         const idPengguna = result.rows[0].id;
 
+        // Generate 6-digit verification code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        const token = crypto.randomBytes(32).toString("hex");
+        try {
+            // Check if code already exists for this user
+            const existingCode = await db.execute({
+                sql: "SELECT id FROM email_verification WHERE user_id = ?",
+                args: [idPengguna]
+            });
+
+            if (existingCode.rows.length > 0) {
+                // Delete old code
+                await db.execute({
+                    sql: "DELETE FROM email_verification WHERE user_id = ?",
+                    args: [idPengguna]
+                });
+            }
+
+            // Store verification code
+            await db.execute({
+                sql: `
+                    INSERT INTO email_verification
+                    (user_id, email, code, expires_at)
+                    VALUES (?, ?, ?, ?)
+                `,
+                args: [idPengguna, email, verificationCode, expiresAt]
+            });
+        } catch (dbError) {
+            console.error("Database error storing verification code:", dbError);
+            // Continue anyway - code will be logged to console
+        }
 
 
-        const expiresAt = Date.now() + 15 * 60 * 1000;
-
-
-        await db.execute({
-            sql: `
-                INSERT INTO reset_password
-                (id_pengguna, token, expires_at)
-                VALUES (?, ?, ?)
-            `,
-            args: [idPengguna, token, expiresAt]
+        await emailTransporter.sendMail({
+            from: `"CHUT" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Kode Reset Password CHUT",
+            text: `Kode verifikasi reset password kamu: ${verificationCode}\n\nKode berlaku selama 10 menit. Jangan bagikan kode ini kepada siapa pun.`,
+            html: `
+        <div style="font-family:Arial,sans-serif;padding:20px">
+            <h2>Reset Password CHUT</h2>
+            <p>Gunakan kode berikut untuk melanjutkan proses reset password:</p>
+            <h1 style="letter-spacing:6px">${verificationCode}</h1>
+            <p>Kode berlaku selama 10 menit.</p>
+            <p>Jika kamu tidak meminta reset password, abaikan email ini.</p>
+        </div>
+    `
         });
 
-    
-        const resetLink =
-            `http://localhost:3000/reset-password.html?token=${token}`;
-
+        // TODO: Send email with verification code
         console.log("=================================");
-        console.log("RESET PASSWORD");
-        console.log(resetLink);
+        console.log("VERIFICATION CODE");
+        console.log(`Email: ${email}`);
+        console.log(`Code: ${verificationCode}`);
+        console.log(`Expires in: 10 minutes`);
         console.log("=================================");
 
         res.json({
-            message: "Jika email terdaftar, instruksi reset password telah dibuat."
+            berhasil: true,
+            pesan: "Jika email terdaftar, kode verifikasi telah dikirim ke email Anda."
         });
 
     } catch (error) {
         console.error("Forgot password error:", error);
 
         res.status(500).json({
-            message: "Terjadi kesalahan server"
+            berhasil: false,
+            pesan: "Gagal memproses request. Silahkan coba lagi."
+        });
+    }
+});
+
+app.post("/verify-email-code", async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Email dan kode wajib diisi"
+            });
+        }
+
+        // Find verification code
+        const result = await db.execute({
+            sql: "SELECT id, user_id, expires_at FROM email_verification WHERE email = ? AND code = ?",
+            args: [email, code]
+        });
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Kode verifikasi tidak valid"
+            });
+        }
+
+        const verification = result.rows[0];
+
+        // Check if expired
+        if (Date.now() > Number(verification.expires_at)) {
+            await db.execute({
+                sql: "DELETE FROM email_verification WHERE id = ?",
+                args: [verification.id]
+            });
+
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Kode verifikasi sudah expired. Silahkan minta kode baru."
+            });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const tokenExpiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+        try {
+            // Store reset token
+            await db.execute({
+                sql: `
+                    INSERT INTO reset_password
+                    (id_pengguna, token, expires_at)
+                    VALUES (?, ?, ?)
+                `,
+                args: [verification.user_id, resetToken, tokenExpiresAt]
+            });
+
+            // Delete verification code
+            await db.execute({
+                sql: "DELETE FROM email_verification WHERE id = ?",
+                args: [verification.id]
+            });
+        } catch (dbError) {
+            console.error("Database error in verify-email-code:", dbError);
+        }
+
+        res.json({
+            berhasil: true,
+            pesan: "Kode verifikasi berhasil. Silahkan buat password baru.",
+            resetToken: resetToken
+        });
+
+    } catch (error) {
+        console.error("Verify email code error:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal memverifikasi kode. Silahkan coba lagi."
         });
     }
 });
 
 app.post("/reset-password", async (req, res) => {
     try {
-        const { token, password } = req.body;
+        const { token, password, passwordConfirm } = req.body;
 
-        if (!token || !password) {
+        if (!token || !password || !passwordConfirm) {
             return res.status(400).json({
                 berhasil: false,
-                pesan: "Token dan password wajib diisi"
+                pesan: "Semua field wajib diisi"
             });
         }
 
@@ -931,7 +1064,14 @@ app.post("/reset-password", async (req, res) => {
             });
         }
 
-        // Cari token
+        if (password !== passwordConfirm) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Password tidak  sama"
+            });
+        }
+
+        // Find token
         const hasil = await db.execute({
             sql: `
                 SELECT id, id_pengguna, expires_at
@@ -944,13 +1084,13 @@ app.post("/reset-password", async (req, res) => {
         if (hasil.rows.length === 0) {
             return res.status(400).json({
                 berhasil: false,
-                pesan: "Token tidak valid"
+                pesan: "Token tidak valid atau sudah kadaluarsa"
             });
         }
 
         const reset = hasil.rows[0];
 
-        // Cek expired
+        // Check if expired
         if (Date.now() > Number(reset.expires_at)) {
 
             await db.execute({
@@ -963,11 +1103,11 @@ app.post("/reset-password", async (req, res) => {
 
             return res.status(400).json({
                 berhasil: false,
-                pesan: "Token sudah expired"
+                pesan: "Token sudah expired. Silahkan minta reset password lagi."
             });
         }
 
-        // Hash password baru
+        // Hash new password
         const passwordHash = await bcrypt.hash(password, 10);
 
         // Update password
@@ -983,7 +1123,7 @@ app.post("/reset-password", async (req, res) => {
             ]
         });
 
-        // Token hanya boleh dipakai sekali
+        // Token can only be used once
         await db.execute({
             sql: `
                 DELETE FROM reset_password
@@ -994,7 +1134,7 @@ app.post("/reset-password", async (req, res) => {
 
         res.json({
             berhasil: true,
-            pesan: "Password berhasil diubah"
+            pesan: "Password berhasil diubah. Silahkan login dengan password baru."
         });
 
     } catch (error) {
@@ -1003,7 +1143,112 @@ app.post("/reset-password", async (req, res) => {
 
         res.status(500).json({
             berhasil: false,
-            pesan: "Gagal mengubah password"
+            pesan: "Gagal mengubah password. Silahkan coba lagi."
+        });
+    }
+});
+
+
+// ========================================
+// LOCATION
+// ========================================
+
+app.post("/save-location", cekLogin, async (req, res) => {
+    try {
+        const { latitude, longitude } = req.body;
+        const userId = req.userId;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Latitude dan longitude wajib diisi"
+            });
+        }
+
+        const location = `${latitude},${longitude}`;
+        const updatedAt = Date.now();
+
+        // Cek apakah user sudah ada di tabel locations
+        const cekLocation = await db.execute({
+            sql: `
+                SELECT user_id
+                FROM locations
+                WHERE user_id = ?
+            `,
+            args: [userId]
+        });
+
+        if (cekLocation.rows.length > 0) {
+            // Update location
+            await db.execute({
+                sql: `
+                    UPDATE locations
+                    SET location = ?, updated_at = ?
+                    WHERE user_id = ?
+                `,
+                args: [location, updatedAt, userId]
+            });
+        } else {
+            // Insert location
+            await db.execute({
+                sql: `
+                    INSERT INTO locations
+                    (user_id, location, updated_at)
+                    VALUES (?, ?, ?)
+                `,
+                args: [userId, location, updatedAt]
+            });
+        }
+
+        res.json({
+            berhasil: true,
+            pesan: "Lokasi berhasil disimpan"
+        });
+
+    } catch (error) {
+        console.error("Error save location:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menyimpan lokasi"
+        });
+    }
+});
+
+app.get("/get-location/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const hasil = await db.execute({
+            sql: `
+                SELECT location, updated_at
+                FROM locations
+                WHERE user_id = ?
+            `,
+            args: [userId]
+        });
+
+        if (hasil.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Lokasi tidak ditemukan"
+            });
+        }
+
+        const locationData = hasil.rows[0];
+
+        res.json({
+            berhasil: true,
+            location: locationData.location,
+            updated_at: locationData.updated_at
+        });
+
+    } catch (error) {
+        console.error("Error get location:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil lokasi"
         });
     }
 });

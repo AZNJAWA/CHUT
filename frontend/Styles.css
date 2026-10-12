@@ -229,6 +229,41 @@ body {
     padding: 10px 30px;
     border-radius: 10px;
     cursor: pointer;
+    width: 100%;
+    max-width: 250px;
+    box-sizing: border-box;
+    transition: 0.2s ease;
+}
+
+.start-conver:hover {
+    background-color: #5B4BD5;
+}
+
+@media (max-width: 768px) {
+    .start-conver {
+        width: 100%;
+        max-width: none;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .start-conver {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 350px) {
+    .start-conver {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 8px;
+        border-radius: 8px;
+    }
 }
 
 

@@ -2,7 +2,7 @@
 
 Aplikasi chat simpel buat ngobrol bareng temen. Santuy, cepet, tinggal gas. 🚀
 
-🌐 **Coba langsung:** [chut-two.vercel.app](https://chut-two.vercel.app)
+🌐 **Coba langsung:** [CH-Chat](https://chut-chats.vercel.app/)
 
 ## 📲 Download Aplikasi
 

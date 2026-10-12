@@ -52,4 +52,4 @@ Jangan lupa setting Supabase juga (bikin bucket `stc` buat stiker). Buka `http:/
 
 ---
 
-Bikinan **AZNJAWA** ✌️ — kalo nemu bug, kabarin aja!
+Selamat Pagi **AZNJAWA** ✌️ — kalo nemu bug, kabarin aja!

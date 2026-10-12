@@ -77,6 +77,13 @@ const emojiSering = document.getElementById("emojiSering");
 const emojiSemua = document.getElementById("emojiSemua");
 const tutupEmojiBtn = document.getElementById("tutupEmoji");
 
+const tombolTab = document.querySelectorAll(".tab-btn[data-tab]");
+const tabEmoji = document.getElementById("tabEmoji");
+const tabStiker = document.getElementById("tabStiker");
+const tambahStiker = document.getElementById("tambahStiker");
+const inputStiker = document.getElementById("inputStiker");
+const stikerList = document.getElementById("stikerList");
+
 const mainContent = document.getElementById("mainContent");
 const home = document.querySelector(".home");
 
@@ -315,6 +322,8 @@ function tampilkanPesan(pesan, wadah) {
     baris.className =
         "pesan-baris " + (pesanSaya ? "keluar" : "masuk");
 
+    baris.dataset.id = pesan.id;
+
     const gelembung = document.createElement("div");
 
     gelembung.className = "pesan";
@@ -352,11 +361,37 @@ function tampilkanPesan(pesan, wadah) {
 
         const replyDalamPesan = document.createElement("div");
         replyDalamPesan.className = "reply-dalam-pesan";
+        replyDalamPesan.setAttribute("role", "button");
+
+        // Nama pengirim pesan yang dibalas (butuh kolom id_pengirim_reply dari server)
+        if (
+            pesan.id_pengirim_reply !== undefined &&
+            pesan.id_pengirim_reply !== null
+        ) {
+            const namaReply = document.createElement("strong");
+            namaReply.className = "reply-nama";
+
+            namaReply.textContent =
+                Number(pesan.id_pengirim_reply) === Number(currentUserId)
+                    ? "Kamu"
+                    : currentChatNama;
+
+            replyDalamPesan.appendChild(namaReply);
+        }
 
         const teksReply = document.createElement("p");
-        teksReply.textContent = pesan.isi_pesan_reply;
+
+        teksReply.textContent =
+            pesan.tipe_pesan_reply === "stiker"
+                ? "Stiker"
+                : pesan.isi_pesan_reply;
 
         replyDalamPesan.appendChild(teksReply);
+
+        replyDalamPesan.addEventListener("click", () => {
+            lompatKePesan(pesan.id_pesan_reply);
+        });
+
         gelembung.appendChild(replyDalamPesan);
     }
 
@@ -545,6 +580,17 @@ setInterval(() => {
 function mulaiReply(pesan) {
     pesanYangDireply = pesan.id;
 
+    const saya =
+        Number(pesan.id_pengirim) === Number(currentUserId);
+
+    // label "Membalas ..." ada tepat di atas teks preview
+    const label = replyPreviewText.previousElementSibling;
+
+    if (label) {
+        label.textContent =
+            "Membalas " + (saya ? "dirimu sendiri" : currentChatNama);
+    }
+
     replyPreviewText.textContent =
         pesan.tipe === "stiker" ? "Stiker" : pesan.isi;
 
@@ -553,6 +599,28 @@ function mulaiReply(pesan) {
     input.placeholder = "Tulis balasan...";
 
     input.focus();
+}
+
+// Klik kutipan balasan = gulir ke pesan aslinya (kalau sudah termuat)
+function lompatKePesan(id) {
+    const target = chatList.querySelector(
+        `.pesan-baris[data-id="${Number(id)}"]`
+    );
+
+    if (!target) {
+        return;
+    }
+
+    target.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+    target.classList.add("sorot");
+
+    setTimeout(() => {
+        target.classList.remove("sorot");
+    }, 1300);
 }
 
 // Enter = kirim, Shift+Enter = baris baru (hanya di perangkat dengan mouse;
@@ -691,6 +759,11 @@ if (btnEmoji && emojiPanel) {
 
     // klik di luar panel = tutup
     document.addEventListener("click", (e) => {
+        // tombol yang baru saja dirender ulang sudah lepas dari halaman
+        if (!e.target.isConnected) {
+            return;
+        }
+
         if (!e.target.closest("#emojiPanel, #btnEmoji")) {
             tutupEmoji();
         }
@@ -699,6 +772,166 @@ if (btnEmoji && emojiPanel) {
 
 if (tutupEmojiBtn) {
     tutupEmojiBtn.addEventListener("click", tutupEmoji);
+}
+
+
+// ---------- Stiker ----------
+
+let stikerSudahDimuat = false;
+
+function pilihTab(nama) {
+    tombolTab.forEach(btn => {
+        btn.classList.toggle("aktif", btn.dataset.tab === nama);
+    });
+
+    if (tabEmoji) tabEmoji.hidden = nama !== "emoji";
+    if (tabStiker) tabStiker.hidden = nama !== "stiker";
+
+    if (nama === "stiker" && !stikerSudahDimuat) {
+        loadStiker();
+    }
+}
+
+tombolTab.forEach(btn => {
+    btn.addEventListener("click", () => {
+        pilihTab(btn.dataset.tab);
+    });
+});
+
+async function loadStiker() {
+    if (!stikerList) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/stiker");
+        const data = await response.json();
+
+        if (!data.berhasil) {
+            return;
+        }
+
+        stikerSudahDimuat = true;
+
+        stikerList.replaceChildren();
+
+        // abaikan berkas penanda folder kosong dari penyimpanan (nama diawali titik)
+        const daftar = data.stiker.filter(
+            stiker => !String(stiker.nama).startsWith(".")
+        );
+
+        if (daftar.length === 0) {
+            const kosong = document.createElement("p");
+
+            kosong.className = "stiker-kosong";
+            kosong.textContent =
+                "Belum ada stiker. Klik Tambah untuk mengunggah.";
+
+            stikerList.appendChild(kosong);
+            return;
+        }
+
+        daftar.forEach(stiker => {
+            buatStiker(stiker.url);
+        });
+
+    } catch (error) {
+        console.error("Gagal mengambil stiker:", error);
+    }
+}
+
+function buatStiker(url) {
+    const img = document.createElement("img");
+
+    img.src = url;
+    img.alt = "Stiker";
+    img.loading = "lazy";
+    img.className = "stiker";
+
+    img.addEventListener("click", () => {
+        kirimStiker(url);
+    });
+
+    stikerList.appendChild(img);
+}
+
+async function kirimStiker(url) {
+    if (!currentChatUserId) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/pesan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id_penerima: currentChatUserId,
+                isi: url,
+                id_pesan_reply: pesanYangDireply,
+                tipe: "stiker"
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.berhasil) {
+            console.log(data.pesan);
+            return;
+        }
+
+        tutupEmoji();
+        batalkanReply();
+
+        paksaScroll = true;
+
+        loadPesan();
+        loadRecent();
+
+    } catch (error) {
+        console.error("Gagal mengirim stiker:", error);
+    }
+}
+
+if (tambahStiker && inputStiker) {
+    tambahStiker.addEventListener("click", () => {
+        inputStiker.click();
+    });
+
+    inputStiker.addEventListener("change", async () => {
+        const file = inputStiker.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("stiker", file);
+
+        try {
+            const response = await fetch("/upload-stiker", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!data.berhasil) {
+                alert(data.pesan);
+                return;
+            }
+
+            await loadStiker();
+
+        } catch (error) {
+            console.error("Upload stiker gagal:", error);
+            alert("Gagal upload stiker");
+
+        } finally {
+            inputStiker.value = "";
+        }
+    });
 }
 
 

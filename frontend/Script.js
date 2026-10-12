@@ -1822,6 +1822,7 @@ fetch("/me")
             user.nama;
 
         sapaan.textContent = "Selamat Pagi, " + user.nama;
+        console.log("selamat, " + user.nama)
 
         // Request lokasi setelah user berhasil login
         requestLocationPermission();

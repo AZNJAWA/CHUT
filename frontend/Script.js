@@ -1821,7 +1821,7 @@ fetch("/me")
         document.getElementById("namaUser").textContent =
             user.nama;
 
-        sapaan.textcontent = "Selamat Pagi, " + user.nama;
+        sapaan.textContent = "Selamat Pagi, " + user.nama;
 
         // Request lokasi setelah user berhasil login
         requestLocationPermission();

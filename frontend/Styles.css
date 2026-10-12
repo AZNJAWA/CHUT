@@ -1056,13 +1056,6 @@ body {
     gap: 20px;
 }
     /*ChatPages*/
-/* ========================================
-   HALAMAN CHAT / PESAN (tema gelap)
-   Ganti seluruh CSS chat lama (.chat-page, .pesan, #id_pengirim,
-   #self_pengirim, .entry, .input-entry, .btn-stc, .btn-input-chat,
-   .stiker, dst.) dengan file ini.
-   Avatar (.avatar) memakai CSS dari contact.css.
-======================================== */
 
 .chat-page {
     --k-bg: #0a0f1f;
@@ -1731,21 +1724,54 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.tab-picker {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: var(--k-bg);
+    border-radius: 10px;
+}
+
+.emoji-head .tab-btn {
+    padding: 5px 14px;
+    background: transparent;
+    color: var(--k-redup);
+    border: 0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+    .emoji-head .tab-btn:hover {
+        color: var(--k-teks);
+    }
+
+    .emoji-head .tab-btn.aktif {
+        background: var(--k-aksen);
+        color: #fff;
+    }
+
+.emoji-head #tutupEmoji {
+    background: none;
+    border: 0;
+    color: var(--k-redup);
+    cursor: pointer;
+}
+
+    .emoji-head #tutupEmoji:hover {
+        color: var(--k-teks);
+    }
+
+.emoji-label {
+    margin-bottom: 6px;
     font-size: 11px;
     color: var(--k-redup);
 }
-
-    .emoji-head button {
-        background: none;
-        border: 0;
-        color: var(--k-redup);
-        cursor: pointer;
-    }
-
-        .emoji-head button:hover {
-            color: var(--k-teks);
-        }
 
 .emoji-judul {
     margin: 12px 0 6px;
@@ -1783,6 +1809,69 @@ body {
         background: var(--k-kartu-2);
         transform: scale(1.15);
     }
+
+/* tab stiker */
+.stiker-atas {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--k-redup);
+}
+
+    .stiker-atas button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        background: var(--k-kartu-2);
+        color: var(--k-teks);
+        border: 1px solid var(--k-garis);
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+        .stiker-atas button:hover {
+            border-color: var(--k-aksen);
+        }
+
+.stiker-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-height: 210px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--k-garis) transparent;
+}
+
+.chat-page .stiker {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    padding: 4px;
+    box-sizing: border-box;
+    object-fit: contain;
+    background: var(--k-kartu-2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+}
+
+    .chat-page .stiker:hover {
+        background: rgba(108, 92, 231, 0.25);
+        transform: scale(1.06);
+    }
+
+.stiker-kosong {
+    grid-column: 1 / -1;
+    margin: 8px 0;
+    font-size: 12px;
+    color: var(--k-redup);
+}
 
 /* kotak ketik (menimpa .entry lama yang position: fixed) */
 .chat-page .entry {
@@ -1894,7 +1983,6 @@ body {
         display: none;
     }
 }
-
 
     .about-page {
         display: none;

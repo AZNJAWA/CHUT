@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>Login</title>
 </head>
 <body>
 
     <div class="login-box">
-        <h1>Login</h1>
+        <h1>Eyyooo Kembali YA?</h1>
+        <p class="subd">kalo belum ya buat dulu wkwkwk</p>
 
         <form id="loginForm">
-
-            <input type="email"
-                   id="email"
-                   placeholder="Email"
-                   required>
-
-            <input type="password"
-                   id="password"
-                   placeholder="Password"
-                   required>
-
-
-            <button type="submit">Login</button>
+            <div class="subtitle">
+                <p id="name-input">Email</p>
+                <input type="email"
+                       id="email"
+                       placeholder="Email"
+                       required>
+            </div>
+            <div class="div-psw">
+                <p id="name-input">Password</p>
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <a href="forgot-password.html">Lupa Password Kah?</a>
+            <button type="submit"> -> Login</button>
         </form>
         
-        <a href="register.html">belum punya akun?</a>
-        <a href="forgot-password.html">Lupa Password Kah?</a>
+        <a class="rgs" href="register.html">belum punya akun?</a>
         <p id="pesan"></p>
     </div>
 

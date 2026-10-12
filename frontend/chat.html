@@ -128,7 +128,7 @@
 
             <div class="cnt">
 
-
+                <!-- HEADER -->
                 <div class="kontak-header">
                     <div>
                         <h1>Kontak</h1>
@@ -140,6 +140,7 @@
                     </button>
                 </div>
 
+                <!-- PANEL TAMBAH TEMAN (tersembunyi, dibuka tombol di atas) -->
                 <div class="add-friend" id="addFriendPanel">
 
                     <h2>Tambah Teman</h2>
@@ -160,7 +161,7 @@
 
                 </div>
 
-
+                <!-- TOOLBAR: cari teman + chip -->
                 <div class="kontak-toolbar">
 
                     <div class="kotak-cari">
@@ -186,7 +187,7 @@
 
                 </div>
 
-
+                <!-- ISI -->
                 <div class="kontak-body">
 
                     <section class="kontak-kiri">
@@ -231,63 +232,135 @@
         </div>
 
         <div class="page chat-page">
-            <h1 id="chatTitle">Chat</h1>
 
-            <div class="chat-list" id="chatList">
+            <!-- JUDUL -->
+            <div class="chat-judul">
+                <h1>Pesan</h1>
+                <p>Semua percakapanmu, di satu tempat.</p>
+            </div>
+
+            <div class="chat-shell" id="chatShell">
+
+                <!-- ============ INBOX (kiri) ============ -->
+                <aside class="inbox">
+
+                    <div class="inbox-atas">
+                        <h2>Kotak masuk</h2>
+
+                        <button class="btn-ikon" id="btnPesanBaru" type="button" title="Pesan baru">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+
+                    <div class="kotak-cari-inbox">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text"
+                               id="cariInbox"
+                               placeholder="Cari percakapan">
+                    </div>
+
+                    <div class="chips">
+                        <button class="chip aktif" data-inbox="semua" type="button">
+                            Semua chat
+                        </button>
+
+                        <button class="chip" data-inbox="belum" type="button">
+                            Belum dibaca <span id="chipInboxBelum">0</span>
+                        </button>
+                    </div>
+
+                    <div class="inbox-list" id="inboxList"></div>
+
+                </aside>
+
+                <!-- ============ PERCAKAPAN (kanan) ============ -->
+                <section class="percakapan">
+
+                    <!-- tampil kalau belum ada chat yang dipilih -->
+                    <div class="chat-kosong" id="chatKosong">
+                        <i class="fa-regular fa-comments"></i>
+                        <h3>Pilih percakapan</h3>
+                        <p>Pilih chat dari kotak masuk, atau mulai dari halaman Contacts.</p>
+                    </div>
+
+                    <div class="chat-aktif" id="chatAktif">
+
+                        <!-- header percakapan -->
+                        <div class="chat-head">
+                            <button class="btn-ikon btn-kembali" id="btnKembaliInbox" type="button" title="Kembali">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+
+                            <div id="chatAvatar"></div>
+
+                            <div class="chat-head-info">
+                                <h2 id="chatTitle">Chat</h2>
+                                <span class="chat-status" id="chatStatus">Offline</span>
+                            </div>
+                        </div>
+
+                        <!-- daftar pesan -->
+                        <div class="chat-list" id="chatList"></div>
+
+                        <!-- bagian bawah -->
+                        <div class="chat-bawah">
+
+                            <!-- panel emoji -->
+                            <div class="emoji-panel" id="emojiPanel">
+                                <div class="emoji-head">
+                                    <span>Sering dipakai</span>
+                                    <button id="tutupEmoji" type="button">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+
+                                <div class="emoji-sering" id="emojiSering"></div>
+
+                                <div class="emoji-judul">Semua emoji</div>
+
+                                <div class="emoji-semua" id="emojiSemua"></div>
+                            </div>
+
+                            <!-- preview balasan -->
+                            <div class="reply-preview" id="replyPreview">
+                                <div class="reply-preview-text">
+                                    <span>Membalas</span>
+                                    <p id="replyPreviewText"></p>
+                                </div>
+
+                                <button id="cancelReply" type="button">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+
+                            <!-- kotak ketik -->
+                            <div class="entry">
+
+                                <textarea class="input-entry"
+                                          rows="1"
+                                          placeholder="Tulis pesan..."></textarea>
+
+                                <button class="btn-ikon" id="btnEmoji" type="button" title="Emoji">
+                                    <i class="fa-regular fa-face-smile"></i>
+                                </button>
+
+                                <button class="btn-input-chat" type="button" title="Kirim">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+
+                            </div>
+
+                            <p class="hint-kirim">Enter untuk kirim · Shift + Enter untuk baris baru</p>
+
+                        </div>
+                        <h3>*KHUSUS YANG MAU STIKER MOHON MAAF MASIH GW BUAT ULANG</h3>
+
+                    </div>
+
+                </section>
 
             </div>
 
-            <div class="reply-preview" id="replyPreview">
-                <div class="reply-preview-text">
-                    <span>Membalas</span>
-                    <p id="replyPreviewText"></p>
-                </div>
-
-                <button id="cancelReply">X</button>
-            </div>
-            <div class="entry">
-
-                <textarea class="input-entry"
-                          placeholder="Ketik pesan..."></textarea>
-
-                <button class="btn-stc" id="btnStiker">
-                    Sticker
-                </button>
-
-                <button class="btn-input-chat">
-                    >>>
-                </button>
-
-            </div>
-
-
-            <div class="stiker-item" id="stikerPanel">
-
-                <div class="stiker-header">
-
-                    <input class="input-stc-name-in-tenor"
-                           id="cariStiker"
-                           placeholder="Cari stiker..." />
-
-                    <button id="tambahStiker">
-                        +
-                    </button>
-
-                </div>
-
-
-                <div class="stiker-list" id="stikerList">
-
-
-                </div>
-
-
-                <input type="file"
-                       id="inputStiker"
-                       accept="image/png,image/jpeg,image/webp,image/gif"
-                       hidden>
-
-            </div>
         </div>
 
         <div class="page about-page">

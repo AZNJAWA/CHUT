@@ -24,6 +24,7 @@ Aplikasi chat simpel buat ngobrol bareng temen. Santuy, cepet, tinggal gas. 🚀
 Node.js + Express • Turso (libSQL) • Supabase Storage • JavaScript biasa • Vercel
 
 ## ▶️ Jalanin Sendiri
+#*Gak Harus ya ini kalo mw buat dari database sendiri
 
 ```bash
 npm install

@@ -1,4 +1,4 @@
-﻿body {
+body {
     margin: 0;
     min-height: 100vh;
     display: flex;
@@ -38,10 +38,10 @@ input {
     transition: 0.2s;
 }
 
-input:focus {
-    border-color: #111827;
-    box-shadow: 0 0 0 3px rgba(17,24,39,0.1);
-}
+    input:focus {
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17,24,39,0.1);
+    }
 
 button {
     margin: 10px;

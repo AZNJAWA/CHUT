@@ -10,6 +10,7 @@
 
     <link rel="stylesheet" href="Styles.css">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <title>CHAT</title>
 </head>
@@ -37,6 +38,11 @@
                 <p>Home</p>
             </a>
 
+            <a href="#" class="menu-item contact-menu">
+                <span>()</span>
+                <p>Contacts</p>
+            </a>
+
             <a href="#" class="menu-item chat-menu">
                 <span>()</span>
                 <p>CHAT</p>
@@ -61,160 +67,256 @@
 
     </nav>
 
-
- 
-
-    <div class="contact" id="contact">
-
-        <div class="cnt">
-
-            <div class="home-header">
-
+    <main class="main-content" id="mainContent">
+        <div class="page home" id="home">
+            <div class="sss">
                 <h1>Home</h1>
 
-                <p>
-                    Selamat datang di CHUT.
-                </p>
-
+                <div class="notifandaccount">
+                    <i class="fa-solid fa-bell"></i>
+                    <i class="fa-solid fa-circle-user"></i>
+                </div>
             </div>
 
+            <div class="home-cnt">
+                <div class="cntx">
+                    <div class="container-d-a">
+                        <h2>Selamat datang, Amba!!</h2>
+                        <p>Aplikasi chatting sederhana untuk berkomunikasi dengan teman-teman Anda.</p>
+                    </div>
+                    <div class="lenx">
+                        <p class="tag-unread">5 unread messages</p>
+                        <p class="tag-online">2 friends online</p>
+                    </div>
+                </div>
 
-            <div class="add-friend">
+                <div class="container-d-a2">
+                    <button class="start-conver">Mulai Percakapan</button>
+                </div>
+            </div>
+            <div class="up-home">
+                <div class="recent-chat-list">
+                    <h3>Recent Chat</h3>
+                    <div class="list-recent">
+                        <div class="human-recent">
+                            <div class="up-human-recent">
+                                <img src="Gorengan.png" />
+                                <div class="child-human-recent">
+                                    <h3>Rusdi Curington</h3>
+                                    <p>WOEEEEEEEEEEEEEEE</p>
+                                </div>
+                            </div>
+                                
+                        </div>
+                    </div>
+                </div>
+                <div class="side-home">
+                    <div class="active-human">
+                        <h3>Sedang Online</h3>
+                        <div class="active-list">
+                            <div class="active-people">
+                                <img src="Gorengan.png" />
+                                <h3>Rusdi Curington</h3>
+                                <p>Online</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contact page" id="contact">
 
-                <h2>𝐓𝐚𝐦𝐛𝐚𝐡 𝐓𝐞𝐦𝐚𝐧</h2>
+            <div class="cnt">
 
-                <p>
-                    Cari teman berdasarkan nickname atau ID pengguna.
-                </p>
+                <!-- HEADER -->
+                <div class="kontak-header">
+                    <div>
+                        <h1>Kontak</h1>
+                        <p>Kirim pesan sekarang kalo mw terserah sih.</p>
+                    </div>
 
-                <div class="search-friend">
-
-                    <input type="text"
-                           id="friendSearch"
-                           placeholder="Nickname atau ID pengguna">
-
-                    <button id="searchFriend">
-                        Cari
+                    <button class="btn-tambah" id="btnTambahTeman" type="button">
+                        <i class="fa fa-plus"></i> Tambah teman
                     </button>
+                </div>
+
+                <!-- PANEL TAMBAH TEMAN (tersembunyi, dibuka tombol di atas) -->
+                <div class="add-friend" id="addFriendPanel">
+
+                    <h2>Tambah Teman</h2>
+
+                    <p>Cari teman berdasarkan nickname atau ID pengguna.</p>
+
+                    <div class="search-friend">
+                        <input type="text"
+                               id="friendSearch"
+                               placeholder="Nickname atau ID pengguna">
+
+                        <button id="searchFriend" type="button">
+                            Cari
+                        </button>
+                    </div>
+
+                    <div class="search-result" id="searchResult"></div>
 
                 </div>
 
-                <div class="search-result"
-                     id="searchResult">
-                        
+                <!-- TOOLBAR: cari teman + chip -->
+                <div class="kontak-toolbar">
+
+                    <div class="kotak-cari">
+                        <i class="fa fa-search"></i>
+                        <input type="text"
+                               id="filterTeman"
+                               placeholder="Cari teman berdasarkan nama atau username">
+                    </div>
+
+                    <div class="chips">
+                        <button class="chip aktif" data-filter="semua" type="button">
+                            Semua teman <span id="chipSemua">0</span>
+                        </button>
+
+                        <button class="chip" data-filter="online" type="button">
+                            Online <span id="chipOnline">0</span>
+                        </button>
+
+                        <button class="chip" id="chipPermintaan" type="button">
+                            Permintaan <span id="chipReq">0</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- ISI -->
+                <div class="kontak-body">
+
+                    <section class="kontak-kiri">
+                        <div class="judul-seksi">
+                            <h2>Teman kamu</h2>
+                            <span class="info-urutan">Nama A–Z</span>
+                        </div>
+
+                        <div id="contactList" class="contact-items"></div>
+                    </section>
+
+                    <aside class="kontak-kanan">
+
+                        <div class="kartu-samping" id="kartuPermintaan">
+                            <div class="judul-seksi">
+                                <h3>Permintaan pertemanan</h3>
+                                <span class="badge-jumlah" id="jumlahPermintaan"></span>
+                            </div>
+
+                            <div id="requestList" class="request-items"></div>
+                        </div>
+
+                        <div class="kartu-samping">
+                            <h3>Perluas lingkaranmu</h3>
+
+                            <p>
+                                Obrolan seru dimulai dengan orang yang kamu kenal.
+                                Bagikan ID kamu supaya teman bisa menemukanmu.
+                            </p>
+
+                            <button class="btn-garis" id="btnSalinId" type="button">
+                                <i class="fa fa-link"></i> <span>Salin ID saya</span>
+                            </button>
+                        </div>
+
+                    </aside>
+
                 </div>
 
             </div>
 
+        </div>
 
-            <h2>Teman</h2>
+        <div class="page chat-page">
+            <h1 id="chatTitle">Chat</h1>
 
-            <div id="contactList" class="contact-items">
-                <div class="item-contact" id="items" role="button">
-                    <img src="" />
-                    <h3>Rusdi Curington</h3>
-                </div>
-                <div class="item-contact" id="items" role="button">
-                    <img src="" />
-                    <h3>Rusdi Curington</h3>
-                </div>
-                <div class="item-contact" id="items" role="button">
-                    <img src="" />
-                    <h3>Rusdi Curington</h3>
-                </div>
-                <div class="item-contact" id="items" role="button">
-                    <img src="" />
-                    <h3>Rusdi Curington</h3>
-                </div>
+            <div class="chat-list" id="chatList">
+
             </div>
 
-        </div>
+            <div class="reply-preview" id="replyPreview">
+                <div class="reply-preview-text">
+                    <span>Membalas</span>
+                    <p id="replyPreviewText"></p>
+                </div>
 
-    </div>
-
-    <div class="page chat-page">
-        <h1 id="chatTitle">Chat</h1>
-
-        <div class="chat-list" id="chatList">
-
-        </div>
-
-        <div class="reply-preview" id="replyPreview">
-            <div class="reply-preview-text">
-                <span>Membalas</span>
-                <p id="replyPreviewText"></p>
+                <button id="cancelReply">X</button>
             </div>
+            <div class="entry">
 
-            <button id="cancelReply">X</button>
-        </div>
-        <div class="entry">
+                <textarea class="input-entry"
+                          placeholder="Ketik pesan..."></textarea>
 
-            <textarea class="input-entry"
-                      placeholder="Ketik pesan..."></textarea>
+                <button class="btn-stc" id="btnStiker">
+                    Sticker
+                </button>
 
-            <button class="btn-stc" id="btnStiker">
-                Sticker
-            </button>
-
-            <button class="btn-input-chat">
-                >>>
-            </button>
-
-        </div>
-
-
-        <div class="stiker-item" id="stikerPanel">
-
-            <div class="stiker-header">
-
-                <input class="input-stc-name-in-tenor"
-                       id="cariStiker"
-                       placeholder="Cari stiker..." />
-
-                <button id="tambahStiker">
-                    +
+                <button class="btn-input-chat">
+                    >>>
                 </button>
 
             </div>
 
 
-            <div class="stiker-list" id="stikerList">
+            <div class="stiker-item" id="stikerPanel">
 
+                <div class="stiker-header">
+
+                    <input class="input-stc-name-in-tenor"
+                           id="cariStiker"
+                           placeholder="Cari stiker..." />
+
+                    <button id="tambahStiker">
+                        +
+                    </button>
+
+                </div>
+
+
+                <div class="stiker-list" id="stikerList">
+
+
+                </div>
+
+
+                <input type="file"
+                       id="inputStiker"
+                       accept="image/png,image/jpeg,image/webp,image/gif"
+                       hidden>
+
+            </div>
+        </div>
+
+        <div class="page about-page">
+            <h1>About CHUT</h1>
+            <p>CHUT adalah aplikasi chatting sederhana.</p>
+        </div>
+
+        <div class="page settings-page">
+            <h1>Settings</h1>
+
+            <div class="setting-item" id="set-nick">
+                <p>Profile</p>
+            </div>
+
+            <div class="setting-item" id="set-tema">
+                <p>Tema</p>
 
             </div>
 
-
-            <input type="file"
-                   id="inputStiker"
-                   accept="image/png,image/jpeg,image/webp,image/gif"
-                   hidden>
-
+            <div class="setting-item" id="logout-set">
+                <p>Logout</p>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <div class="page about-page">
-        <h1>About CHUT</h1>
-        <p>CHUT adalah aplikasi chatting sederhana.</p>
-    </div>
+        
 
-    <div class="page settings-page">
-        <h1>Settings</h1>
-
-        <div class="setting-item" id="set-nick">
-            <p>Profile</p>
-        </div>
-
-        <div class="setting-item" id="set-tema">
-            <p>Tema</p>
-            
-        </div>
-
-        <div class="setting-item" id="logout-set">
-            <p>Logout</p>
-        </div>
-    </div>
-
-    <script src="Script.js"></script>
+        <script src="Script.js"></script>
 
 </body>
 

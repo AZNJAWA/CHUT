@@ -10,8 +10,6 @@ const multer = require("multer");
 const supabase = require("./supabase");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const path = require("path");
-
 
 
 const app = express();
@@ -27,6 +25,28 @@ app.use(express.json());
 
 
 
+function cekLoginApi(req, res, next) {
+    try {
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.status(401).json({
+                berhasil: false,
+                pesan: "Belum login"
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.id;
+        next();
+
+    } catch (error) {
+        return res.status(401).json({
+            berhasil: false,
+            pesan: "Token tidak valid atau expired"
+        });
+    }
+}
 
 const emailTransporter = nodemailer.createTransport({
     service: "gmail",
@@ -34,10 +54,6 @@ const emailTransporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_APP_PASSWORD
     }
-});
-
-app.get("/tes-chut", (req, res) => {
-    res.status(200).send("CHUT SERVER AKTIF");
 });
 
 function cekLogin(req, res, next) {
@@ -62,10 +78,9 @@ function cekLogin(req, res, next) {
     }
 }
 
-app.use(express.static(path.join(__dirname, "frontend"), {
+app.use(express.static("frontend", {
     index: false
 }));
-
 
 app.get("/", async (req, res) => {
     try {
@@ -369,7 +384,14 @@ app.get("/cari-teman", cekLogin, async (req, res) => {
     }
 });
 
-app.post("/teman", cekLogin, async (req, res) => {
+
+// ========================================
+// PERMINTAAN PERTEMANAN
+// (menggantikan POST /teman yang langsung menambah teman)
+// ========================================
+
+// Kirim permintaan
+app.post("/permintaan-teman", cekLogin, async (req, res) => {
     try {
         const { id_teman } = req.body;
 
@@ -388,11 +410,7 @@ app.post("/teman", cekLogin, async (req, res) => {
         }
 
         const cekUser = await db.execute({
-            sql: `
-                SELECT id
-                FROM pengguna
-                WHERE id = ?
-            `,
+            sql: "SELECT id FROM pengguna WHERE id = ?",
             args: [id_teman]
         });
 
@@ -403,23 +421,61 @@ app.post("/teman", cekLogin, async (req, res) => {
             });
         }
 
+        // Sudah berteman?
+        const cekTeman = await db.execute({
+            sql: `
+                SELECT id FROM teman
+                WHERE id_pengguna = ? AND id_teman = ?
+            `,
+            args: [req.userId, id_teman]
+        });
+
+        if (cekTeman.rows.length > 0) {
+            return res.status(409).json({
+                berhasil: false,
+                pesan: "Kalian sudah berteman"
+            });
+        }
+
+        // Sudah ada permintaan pending (dari arah mana pun)?
+        const cekPending = await db.execute({
+            sql: `
+                SELECT id_pengirim
+                FROM friendspermission
+                WHERE status = 'pending'
+                    AND (
+                        (id_pengirim = ? AND id_penerima = ?)
+                        OR
+                        (id_pengirim = ? AND id_penerima = ?)
+                    )
+            `,
+            args: [req.userId, id_teman, id_teman, req.userId]
+        });
+
+        if (cekPending.rows.length > 0) {
+            const dariDia =
+                Number(cekPending.rows[0].id_pengirim) === Number(id_teman);
+
+            return res.status(409).json({
+                berhasil: false,
+                pesan: dariDia
+                    ? "Dia sudah mengirim permintaan ke kamu, cek daftar permintaan"
+                    : "Permintaan sudah terkirim, tunggu dia menerima"
+            });
+        }
+
         await db.execute({
             sql: `
-                INSERT OR IGNORE INTO teman
-                (id_pengguna, id_teman)
-                VALUES (?, ?), (?, ?)
+                INSERT INTO friendspermission
+                (id_pengirim, id_penerima, status, created_at)
+                VALUES (?, ?, 'pending', ?)
             `,
-            args: [
-                req.userId,
-                id_teman,
-                id_teman,
-                req.userId
-            ]
+            args: [req.userId, id_teman, new Date().toISOString()]
         });
 
         res.json({
             berhasil: true,
-            pesan: "Teman berhasil ditambahkan"
+            pesan: "Permintaan pertemanan terkirim"
         });
 
     } catch (error) {
@@ -427,10 +483,142 @@ app.post("/teman", cekLogin, async (req, res) => {
 
         res.status(500).json({
             berhasil: false,
-            pesan: "Gagal menambahkan teman"
+            pesan: "Gagal mengirim permintaan"
         });
     }
 });
+
+// Daftar permintaan masuk
+app.get("/permintaan-teman", cekLogin, async (req, res) => {
+    try {
+        const hasil = await db.execute({
+            sql: `
+                SELECT
+                    f.id,
+                    f.id_pengirim,
+                    p.nama,
+                    f.created_at
+                FROM friendspermission f
+                JOIN pengguna p ON p.id = f.id_pengirim
+                WHERE f.id_penerima = ?
+                    AND f.status = 'pending'
+                ORDER BY f.id DESC
+            `,
+            args: [req.userId]
+        });
+
+        res.json({
+            berhasil: true,
+            permintaan: hasil.rows
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil permintaan"
+        });
+    }
+});
+
+// Terima permintaan
+app.post("/permintaan-teman/:id/terima", cekLogin, async (req, res) => {
+    try {
+        const idPermintaan = req.params.id;
+
+        // id_penerima = saya, supaya hanya penerima yang bisa menerima
+        const cek = await db.execute({
+            sql: `
+                SELECT id, id_pengirim
+                FROM friendspermission
+                WHERE id = ?
+                    AND id_penerima = ?
+                    AND status = 'pending'
+            `,
+            args: [idPermintaan, req.userId]
+        });
+
+        if (cek.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Permintaan tidak ditemukan"
+            });
+        }
+
+        const pengirim = cek.rows[0].id_pengirim;
+
+        // batch = dua perintah berjalan sebagai satu paket
+        await db.batch([
+            {
+                sql: `
+                    INSERT OR IGNORE INTO teman
+                    (id_pengguna, id_teman)
+                    VALUES (?, ?), (?, ?)
+                `,
+                args: [req.userId, pengirim, pengirim, req.userId]
+            },
+            {
+                sql: `
+                    UPDATE friendspermission
+                    SET status = 'diterima'
+                    WHERE id = ?
+                `,
+                args: [idPermintaan]
+            }
+        ], "write");
+
+        res.json({
+            berhasil: true,
+            pesan: "Permintaan diterima"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menerima permintaan"
+        });
+    }
+});
+
+// Tolak permintaan
+app.post("/permintaan-teman/:id/tolak", cekLogin, async (req, res) => {
+    try {
+        const hasil = await db.execute({
+            sql: `
+                UPDATE friendspermission
+                SET status = 'ditolak'
+                WHERE id = ?
+                    AND id_penerima = ?
+                    AND status = 'pending'
+            `,
+            args: [req.params.id, req.userId]
+        });
+
+        if (hasil.rowsAffected === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Permintaan tidak ditemukan"
+            });
+        }
+
+        res.json({
+            berhasil: true,
+            pesan: "Permintaan ditolak"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menolak permintaan"
+        });
+    }
+});
+
 
 app.get("/teman", cekLogin, async (req, res) => {
     try {
@@ -464,6 +652,58 @@ app.get("/teman", cekLogin, async (req, res) => {
     }
 });
 
+app.get("/chat-terbaru", cekLogin, async (req, res) => {
+    try {
+        const hasil = await db.execute({
+            sql: `
+        SELECT
+            p.id,
+            p.nama,
+            m.isi,
+            m.tipe,
+            m.tanggal_waktu,
+            CASE WHEN m.id_pengirim = ? THEN 1 ELSE 0 END AS dari_saya,
+            (
+                SELECT COUNT(*)
+                FROM pesan
+                WHERE id_pengirim = p.id
+                    AND id_penerima = ?
+                    AND dibaca = 0
+            ) AS belum_dibaca
+        FROM pengguna p
+        JOIN pesan m ON m.id = (
+            SELECT MAX(id)
+            FROM pesan
+            WHERE (id_pengirim = ? AND id_penerima = p.id)
+               OR (id_pengirim = p.id AND id_penerima = ?)
+        )
+        WHERE p.id != ?
+        ORDER BY m.id DESC
+        LIMIT 20
+    `,
+            args: [
+                req.userId,   // dari_saya
+                req.userId,   // belum_dibaca
+                req.userId,   // subquery MAX(id), bagian 1
+                req.userId,   // subquery MAX(id), bagian 2
+                req.userId    // WHERE p.id != ?
+            ]
+        });
+
+        res.json({
+            berhasil: true,
+            chat: hasil.rows
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil chat terbaru"
+        });
+    }
+});
+
 app.get("/pesan/:id_teman", cekLogin, async (req, res) => {
     try {
         const idTeman = req.params.id_teman;
@@ -478,6 +718,7 @@ app.get("/pesan/:id_teman", cekLogin, async (req, res) => {
                 p.id_penerima,
                 p.id_pesan_reply,
                 p.tipe,
+                p.dibaca,
                 r.isi AS isi_pesan_reply
             FROM pesan p
             LEFT JOIN pesan r
@@ -589,6 +830,36 @@ app.patch("/pesan/:id", cekLogin, async (req, res) => {
         res.status(500).json({
             berhasil: false,
             pesan: "Gagal mengedit pesan"
+        });
+    }
+});
+
+app.patch("/pesan/dibaca/:id_teman", cekLogin, async (req, res) => {
+    try {
+        const idTeman = req.params.id_teman;
+
+        // Tandai pesan dari teman ke saya yang belum dibaca
+        const hasil = await db.execute({
+            sql: `
+                UPDATE pesan
+                SET dibaca = 1
+                WHERE id_pengirim = ?
+                    AND id_penerima = ?
+                    AND dibaca = 0
+            `,
+            args: [idTeman, req.userId]
+        });
+
+        res.json({
+            berhasil: true,
+            jumlah: hasil.rowsAffected
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal menandai pesan dibaca"
         });
     }
 });
@@ -1261,14 +1532,92 @@ app.get("/get-location/:userId", async (req, res) => {
 });
 
 
+
+app.post("/set-status", cekLogin, async (req, res) => {
+    try {
+        const status = req.body.status;
+        const userId = req.userId;   // dari JWT, bukan session
+
+        if (!["online", "offline"].includes(status)) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Status tidak valid"
+            });
+        }
+
+        const hasil = await db.execute({
+            sql: `UPDATE pengguna SET status = ? WHERE id = ?`,  // pakai id
+            args: [status, Number(userId)]
+        });
+
+        if (hasil.rowsAffected === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Pengguna tidak ditemukan"
+            });
+        }
+
+        return res.json({
+            berhasil: true,
+            pesan: "Status berhasil diperbarui"
+        });
+
+    } catch (error) {
+        console.error("ERROR SET STATUS:", error);
+        return res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal memperbarui status"
+        });
+    }
+});
+
+
+app.get("/friend-status", cekLogin, async (req, res) => {
+    try {
+        const hasil = await db.execute({
+            sql: `
+                SELECT
+                    p.id,
+                    p.nama,
+                    p.id_pengguna,
+                    COALESCE(p.status, 'offline') AS status
+                FROM teman t
+                JOIN pengguna p
+                    ON p.id = t.id_teman
+                WHERE t.id_pengguna = ?
+                ORDER BY
+                    CASE
+                        WHEN p.status = 'online' THEN 0
+                        ELSE 1
+                    END,
+                    p.nama ASC
+            `,
+            args: [req.userId]
+        });
+
+        res.json({
+            berhasil: true,
+            teman: hasil.rows
+        });
+
+    } catch (error) {
+        console.error("Error friend-status:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengambil status teman"
+        });
+    }
+});
+
 // ========================================
 // JALANKAN SERVER
 // ========================================
 
-module.exports = app;
+app.listen(PORT, () => {
 
-if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`CHUT berjalan di port ${PORT}`);
-    });
-}
+    console.log(
+        `Server CHUT berjalan di http://localhost:${PORT}`
+    );
+
+});

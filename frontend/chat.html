@@ -305,20 +305,49 @@
                         <!-- bagian bawah -->
                         <div class="chat-bawah">
 
-                            <!-- panel emoji -->
+                            <!-- panel emoji & stiker -->
                             <div class="emoji-panel" id="emojiPanel">
+
                                 <div class="emoji-head">
-                                    <span>Sering dipakai</span>
+                                    <div class="tab-picker">
+                                        <button class="tab-btn aktif" data-tab="emoji" type="button">Emoji</button>
+                                        <button class="tab-btn" data-tab="stiker" type="button">Stiker</button>
+                                    </div>
+
                                     <button id="tutupEmoji" type="button">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </div>
 
-                                <div class="emoji-sering" id="emojiSering"></div>
+                                <!-- tab emoji -->
+                                <div class="tab-isi" id="tabEmoji">
+                                    <div class="emoji-label">Sering dipakai</div>
 
-                                <div class="emoji-judul">Semua emoji</div>
+                                    <div class="emoji-sering" id="emojiSering"></div>
 
-                                <div class="emoji-semua" id="emojiSemua"></div>
+                                    <div class="emoji-judul">Semua emoji</div>
+
+                                    <div class="emoji-semua" id="emojiSemua"></div>
+                                </div>
+
+                                <!-- tab stiker -->
+                                <div class="tab-isi" id="tabStiker" hidden>
+                                    <div class="stiker-atas">
+                                        <span>Stikermu</span>
+
+                                        <button id="tambahStiker" type="button">
+                                            <i class="fa-solid fa-plus"></i> Tambah
+                                        </button>
+                                    </div>
+
+                                    <div class="stiker-list" id="stikerList"></div>
+
+                                    <input type="file"
+                                           id="inputStiker"
+                                           accept="image/png,image/jpeg,image/webp,image/gif"
+                                           hidden>
+                                </div>
+
                             </div>
 
                             <!-- preview balasan -->
@@ -353,7 +382,6 @@
                             <p class="hint-kirim">Enter untuk kirim · Shift + Enter untuk baris baru</p>
 
                         </div>
-                        <h3>*KHUSUS YANG MAU STIKER MOHON MAAF MASIH GW BUAT ULANG</h3>
 
                     </div>
 

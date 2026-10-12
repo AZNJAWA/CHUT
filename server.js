@@ -10,6 +10,7 @@ const multer = require("multer");
 const supabase = require("./supabase");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const path = require("path");
 
 
 const app = express();
@@ -78,9 +79,7 @@ function cekLogin(req, res, next) {
     }
 }
 
-app.use(express.static("frontend", {
-    index: false
-}));
+app.use(express.static(path.join(__dirname, "frontend"), { index: false }));
 
 app.get("/", async (req, res) => {
     try {
@@ -104,7 +103,7 @@ app.get("/", async (req, res) => {
 
 
 app.get("/chat.html", cekLogin, (req, res) => {
-    res.sendFile(__dirname + "/frontend/chat.html");
+    res.sendFile(path.join(__dirname, "frontend", "chat.html"));
 });
 
 

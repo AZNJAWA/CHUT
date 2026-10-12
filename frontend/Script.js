@@ -10,6 +10,12 @@ let currentIdPengguna = null;
 let daftarTeman = [];
 let filterAktif = "semua";
 
+let currentChatNama = "";
+let daftarChat = [];
+let filterInbox = "semua";
+let signaturTerakhir = null;
+let paksaScroll = false;
+
 const hamburger = document.getElementById("hamburger");
 const sidebar = document.getElementById("sidebar");
 const content = document.getElementById("contact");
@@ -54,12 +60,22 @@ const kontak = document.querySelector(".contact-menu");
 const chatList = document.getElementById("chatList");
 const reply = document.createElement("button");
 
-const btnStiker = document.getElementById("btnStiker");
-const stikerPanel = document.getElementById("stikerPanel");
+const chatShell = document.getElementById("chatShell");
+const chatAvatar = document.getElementById("chatAvatar");
+const chatStatus = document.getElementById("chatStatus");
+const btnKembaliInbox = document.getElementById("btnKembaliInbox");
 
-const tambahStiker = document.getElementById("tambahStiker");
-const inputStiker = document.getElementById("inputStiker");
-const stikerList = document.getElementById("stikerList");
+const inboxList = document.getElementById("inboxList");
+const cariInbox = document.getElementById("cariInbox");
+const chipInboxBelum = document.getElementById("chipInboxBelum");
+const btnPesanBaru = document.getElementById("btnPesanBaru");
+const semuaChipInbox = document.querySelectorAll(".chip[data-inbox]");
+
+const btnEmoji = document.getElementById("btnEmoji");
+const emojiPanel = document.getElementById("emojiPanel");
+const emojiSering = document.getElementById("emojiSering");
+const emojiSemua = document.getElementById("emojiSemua");
+const tutupEmojiBtn = document.getElementById("tutupEmoji");
 
 const mainContent = document.getElementById("mainContent");
 const home = document.querySelector(".home");
@@ -70,20 +86,6 @@ const listRecent = document.querySelector(".list-recent");
 
 const tagUnread = document.querySelector(".tag-unread");
 const tagOnline = document.querySelector(".tag-online");
-
-const sapaan = document.querySelector(".sapaan")
-
-
-tambahStiker.addEventListener("click", () => {
-    inputStiker.click();
-});
-
-btnStiker.addEventListener("click", () => {
-
-    stikerPanel.classList.toggle("buka");
-
-});
-
 
 
 chatList.addEventListener("scroll", () => {
@@ -131,6 +133,8 @@ chatMenu.addEventListener("click", (e) => {
 
     bukaPage(chatPage);
     aktifkanMenu(chatMenu);
+
+    loadRecent();
 });
 
 aboutMenu.addEventListener("click", (e) => {
@@ -154,56 +158,182 @@ settingMenu.addEventListener("click", (e) => {
 
 function bukaChat(idTeman, namaTeman) {
     currentChatUserId = idTeman;
+    currentChatNama = namaTeman;
 
     pesanPalingLamaId = null;
     sedangLoadPesanLama = false;
     masihAdaPesan = true;
+    signaturTerakhir = null;
+    paksaScroll = true;
 
     bukaPage(chatPage);
     aktifkanMenu(chatMenu);
 
-    document.getElementById("chatTitle").textContent = namaTeman;
+    // bersihkan sisa percakapan sebelumnya
+    chatList.replaceChildren();
+    batalkanReply();
+    tutupEmoji();
+
+    if (chatShell) {
+        chatShell.classList.add("ada-chat");
+    }
+
+    perbaruiHeaderChat();
+    renderInbox();
 
     loadPesan();
 }
 
-function tampilkanPesan(pesan, chatList) {
+function perbaruiHeaderChat() {
+    if (!currentChatUserId) {
+        return;
+    }
 
-    const item = document.createElement("div");
+    const judul = document.getElementById("chatTitle");
 
-    item.className = "pesan";
+    if (judul) {
+        judul.textContent = currentChatNama;
+    }
+
+    const teman = daftarTeman.find(
+        t => Number(t.id) === Number(currentChatUserId)
+    );
+
+    const online = !!teman && teman.status === "online";
+
+    if (chatAvatar) {
+        chatAvatar.replaceChildren(
+            buatAvatar(currentChatNama, online)
+        );
+    }
+
+    if (chatStatus) {
+        chatStatus.textContent = online ? "Online sekarang" : "Offline";
+        chatStatus.className = "chat-status" + (online ? " online" : "");
+    }
+}
+
+function batalkanReply() {
+    pesanYangDireply = null;
+
+    replyPreviewText.textContent = "";
+
+    replyPreview.style.display = "none";
+
+    input.placeholder = "Tulis pesan...";
+}
+
+
+// ---------- Tanggal & jam ----------
+
+function kunciTanggal(tgl) {
+    return tgl.toDateString();
+}
+
+function labelTanggal(tgl) {
+    const sekarang = new Date();
+
+    const kemarin = new Date();
+    kemarin.setDate(sekarang.getDate() - 1);
+
+    if (tgl.toDateString() === sekarang.toDateString()) {
+        return "Hari ini";
+    }
+
+    if (tgl.toDateString() === kemarin.toDateString()) {
+        return "Kemarin";
+    }
+
+    return tgl.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+function buatPemisahTanggal(tgl) {
+    const pemisah = document.createElement("div");
+
+    pemisah.className = "pemisah-tanggal";
+    pemisah.dataset.kunci = kunciTanggal(tgl);
+
+    const teks = document.createElement("span");
+    teks.textContent = labelTanggal(tgl);
+
+    pemisah.appendChild(teks);
+
+    return pemisah;
+}
+
+function waktuSingkat(iso) {
+    const tgl = new Date(iso);
+    const menit = Math.floor((Date.now() - tgl.getTime()) / 60000);
+
+    if (isNaN(menit)) return "";
+    if (menit < 1) return "baru";
+    if (menit < 60) return `${menit}m`;
+    if (menit < 60 * 24) return `${Math.floor(menit / 60)}j`;
+    if (menit < 60 * 48) return "Kemarin";
+
+    return tgl.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short"
+    });
+}
+
+
+// ---------- Pesan ----------
+
+// Menampilkan banyak pesan sekaligus + pemisah tanggal.
+// Mengembalikan kunci tanggal pesan terakhir.
+function tampilkanDaftarPesan(daftar, wadah) {
+    let terakhir = null;
+
+    daftar.forEach(pesan => {
+        const tgl = new Date(pesan.tanggal_waktu);
+        const kunci = kunciTanggal(tgl);
+
+        if (kunci !== terakhir) {
+            wadah.appendChild(buatPemisahTanggal(tgl));
+            terakhir = kunci;
+        }
+
+        tampilkanPesan(pesan, wadah);
+    });
+
+    return terakhir;
+}
+
+function tampilkanPesan(pesan, wadah) {
 
     const pesanSaya =
         Number(pesan.id_pengirim) ===
         Number(currentUserId);
 
-    if (pesanSaya) {
-        item.id = "self_pengirim";
-    } else {
-        item.id = "id_pengirim";
-    }
+    const baris = document.createElement("div");
+
+    baris.className =
+        "pesan-baris " + (pesanSaya ? "keluar" : "masuk");
+
+    const gelembung = document.createElement("div");
+
+    gelembung.className = "pesan";
 
 
     let isiPesan;
 
-
-
-
+    // Stiker lama tetap bisa tampil (fitur kirim stiker sudah dihapus)
     if (pesan.tipe === "stiker") {
 
         const img = document.createElement("img");
 
         img.src = pesan.isi;
+        img.alt = "Stiker";
         img.className = "stiker-pesan";
 
         isiPesan = img;
 
-    }
-
-
-
-
-    else {
+    } else {
 
         const p = document.createElement("p");
 
@@ -215,181 +345,100 @@ function tampilkanPesan(pesan, chatList) {
     }
 
 
-
-
     if (
         pesan.id_pesan_reply &&
         pesan.isi_pesan_reply
     ) {
 
-        const replyDalamPesan =
-            document.createElement("div");
+        const replyDalamPesan = document.createElement("div");
+        replyDalamPesan.className = "reply-dalam-pesan";
 
-        replyDalamPesan.className =
-            "reply-dalam-pesan";
+        const teksReply = document.createElement("p");
+        teksReply.textContent = pesan.isi_pesan_reply;
 
-        const teksReply =
-            document.createElement("p");
-
-        teksReply.textContent =
-            pesan.isi_pesan_reply;
-
-        replyDalamPesan.appendChild(
-            teksReply
-        );
-
-        item.appendChild(
-            replyDalamPesan
-        );
+        replyDalamPesan.appendChild(teksReply);
+        gelembung.appendChild(replyDalamPesan);
     }
 
-
-    item.appendChild(isiPesan);
-
+    gelembung.appendChild(isiPesan);
 
 
-    const waktu =
-        document.createElement("span");
+    // Jam + centang dibaca
+    const meta = document.createElement("div");
+    meta.className = "pesan-meta";
 
-    waktu.className =
-        "waktu-pesan";
-
-    const tanggal =
-        new Date(pesan.tanggal_waktu);
+    const waktu = document.createElement("span");
+    waktu.className = "waktu-pesan";
 
     waktu.textContent =
-        tanggal.toLocaleTimeString(
-            "id-ID",
+        new Date(pesan.tanggal_waktu).toLocaleTimeString(
+            "en-GB",
             {
                 hour: "2-digit",
                 minute: "2-digit"
             }
         );
 
-    item.appendChild(waktu);
+    meta.appendChild(waktu);
 
-
-    // Centang dibaca (hanya untuk pesan saya)
     if (pesanSaya) {
 
         const sudahDibaca = Number(pesan.dibaca) === 1;
 
-        const centang =
-            document.createElement("span");
+        const centang = document.createElement("span");
 
         centang.className =
-            "centang-pesan" +
-            (sudahDibaca ? " dibaca" : "");
+            "centang-pesan" + (sudahDibaca ? " dibaca" : "");
 
-        centang.textContent =
-            sudahDibaca ? "✓✓" : "✓";
+        centang.textContent = sudahDibaca ? "✓✓" : "✓";
 
-        item.appendChild(centang);
+        meta.appendChild(centang);
     }
 
 
+    // Tombol aksi (muncul saat kursor di atas pesan)
+    const aksi = document.createElement("div");
+    aksi.className = "aksi-pesan";
 
-    const aksi =
-        document.createElement("div");
+    const balas = document.createElement("button");
+    balas.type = "button";
+    balas.textContent = "Balas";
 
-    aksi.className =
-        "aksi-pesan";
+    balas.addEventListener("click", () => {
+        mulaiReply(pesan);
+    });
 
-
-    const reply =
-        document.createElement("button");
-
-    reply.textContent = "Reply";
-
-    reply.addEventListener(
-        "click",
-        () => {
-            mulaiReply(pesan);
-        }
-    );
-
-    aksi.appendChild(reply);
-
+    aksi.appendChild(balas);
 
     if (pesanSaya) {
 
-        const edit =
-            document.createElement("button");
+        if (pesan.tipe !== "stiker") {
 
-        edit.textContent = "Edit";
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.textContent = "Edit";
 
-        edit.addEventListener(
-            "click",
-            () => {
+            edit.addEventListener("click", () => {
+                editPesan(pesan.id, isiPesan, pesan.isi);
+            });
 
-                editPesan(
-                    pesan.id,
-                    isiPesan,
-                    pesan.isi
-                );
+            aksi.appendChild(edit);
+        }
 
-            }
-        );
-
-
-        const hapus =
-            document.createElement("button");
-
+        const hapus = document.createElement("button");
+        hapus.type = "button";
         hapus.textContent = "Hapus";
 
-        hapus.addEventListener(
-            "click",
-            () => {
+        hapus.addEventListener("click", () => {
+            hapusPesan(pesan.id, baris);
+        });
 
-                hapusPesan(
-                    pesan.id,
-                    item
-                );
-
-            }
-        );
-
-
-        aksi.appendChild(edit);
         aksi.appendChild(hapus);
     }
 
+    baris.append(gelembung, meta, aksi);
 
-    item.appendChild(aksi);
-
-    chatList.appendChild(item);
-}
-
-async function loadStiker() {
-
-    try {
-
-        const response =
-            await fetch("/stiker");
-
-        const data =
-            await response.json();
-
-        if (!data.berhasil) {
-            return;
-        }
-
-        stikerList.innerHTML = "";
-
-        data.stiker.forEach(stiker => {
-
-            buatStiker(stiker.url);
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Gagal mengambil stiker:",
-            error
-        );
-
-    }
+    wadah.appendChild(baris);
 }
 
 async function tandaiDibaca(idTeman) {
@@ -407,10 +456,14 @@ async function tandaiDibaca(idTeman) {
 }
 
 async function loadPesan() {
+    if (!currentChatUserId) {
+        return;
+    }
+
+    const idSaatIni = currentChatUserId;
+
     try {
-        const response = await fetch(
-            `/pesan/${currentChatUserId}`
-        );
+        const response = await fetch(`/pesan/${idSaatIni}`);
 
         const data = await response.json();
 
@@ -418,22 +471,48 @@ async function loadPesan() {
             return;
         }
 
-        const chatList = document.getElementById("chatList");
-
-        chatList.innerHTML = "";
-
-        data.pesan.forEach(pesan => {
-            tampilkanPesan(pesan, chatList);
-        });
+        // Kalau pengguna sudah pindah chat selama menunggu, abaikan
+        if (idSaatIni !== currentChatUserId) {
+            return;
+        }
 
         // Tandai pesan dari teman sebagai dibaca
         const adaBelumDibaca = data.pesan.some(p =>
-            Number(p.id_pengirim) === Number(currentChatUserId) &&
+            Number(p.id_pengirim) === Number(idSaatIni) &&
             Number(p.dibaca) === 0
         );
 
         if (adaBelumDibaca && document.visibilityState === "visible") {
-            tandaiDibaca(currentChatUserId);
+            tandaiDibaca(idSaatIni);
+        }
+
+        // Jangan gambar ulang kalau tidak ada yang berubah
+        const signature = data.pesan
+            .map(p => `${p.id}:${p.dibaca}:${p.isi}`)
+            .join("|");
+
+        if (signature === signaturTerakhir) {
+            return;
+        }
+
+        signaturTerakhir = signature;
+
+        const posisiLama = chatList.scrollTop;
+
+        const dekatBawah =
+            chatList.scrollHeight -
+            chatList.scrollTop -
+            chatList.clientHeight < 120;
+
+        chatList.replaceChildren();
+
+        if (data.pesan.length === 0) {
+            const sepi = document.createElement("p");
+            sepi.className = "chat-sepi";
+            sepi.textContent = "Belum ada pesan. Sapa duluan!";
+            chatList.appendChild(sepi);
+        } else {
+            tampilkanDaftarPesan(data.pesan, chatList);
         }
 
         if (data.pesan.length > 0) {
@@ -442,9 +521,15 @@ async function loadPesan() {
 
         masihAdaPesan = data.adaLagi;
 
-        requestAnimationFrame(() => {
-            chatList.scrollTop = chatList.scrollHeight;
-        });
+        if (paksaScroll || dekatBawah) {
+            paksaScroll = false;
+
+            requestAnimationFrame(() => {
+                chatList.scrollTop = chatList.scrollHeight;
+            });
+        } else {
+            chatList.scrollTop = posisiLama;
+        }
 
     } catch (error) {
         console.error("Gagal mengambil pesan:", error);
@@ -454,14 +539,14 @@ async function loadPesan() {
 setInterval(() => {
     if (currentChatUserId) {
         loadPesan();
-        loadStiker();
     }
 }, 2000);
 
 function mulaiReply(pesan) {
     pesanYangDireply = pesan.id;
 
-    replyPreviewText.textContent = pesan.isi;
+    replyPreviewText.textContent =
+        pesan.tipe === "stiker" ? "Stiker" : pesan.isi;
 
     replyPreview.style.display = "flex";
 
@@ -470,107 +555,305 @@ function mulaiReply(pesan) {
     input.focus();
 }
 
-inputStiker.addEventListener("change", async () => {
+// Enter = kirim, Shift+Enter = baris baru (hanya di perangkat dengan mouse;
+// di HP, Enter tetap membuat baris baru)
+input.addEventListener("keydown", (e) => {
+    const pakaiMouse = window.matchMedia("(pointer: fine)").matches;
 
-    const file = inputStiker.files[0];
-
-    if (!file) {
-        return;
+    if (
+        pakaiMouse &&
+        e.key === "Enter" &&
+        !e.shiftKey &&
+        !e.isComposing
+    ) {
+        e.preventDefault();
+        btnInputChat.click();
     }
-
-    const formData = new FormData();
-    formData.append("stiker", file);
-
-    try {
-
-        const response = await fetch("/upload-stiker", {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!data.berhasil) {
-            alert(data.pesan);
-            return;
-        }
-
-        buatStiker(data.url);
-
-        inputStiker.value = "";
-
-    } catch (error) {
-
-        console.error("Upload stiker gagal:", error);
-        alert("Gagal upload stiker");
-
-    }
-
 });
 
-async function kirimStiker(url) {
 
-    if (!currentChatUserId) {
-        console.log("Belum memilih teman");
-        return;
-    }
+// ---------- Emoji ----------
 
+const EMOJI_BAWAAN = ["😊", "✨", "💜", "👋", "🙌", "🔥"];
+
+const EMOJI_SEMUA = [
+    "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣",
+    "😊", "😇", "🙂", "😉", "😍", "🥰", "😘", "😋",
+    "😎", "🤩", "🥳", "😏", "😢", "😭", "😤", "😡",
+    "🤔", "🙄", "😴", "🤯", "😱", "🥺", "😬", "🤗",
+    "👍", "👎", "👏", "🙌", "🙏", "💪", "👋", "🤝",
+    "✌️", "👌", "🤞", "🫶", "❤️", "💜", "💙", "💚",
+    "🔥", "✨", "⭐", "🎉", "🎊", "💯", "✅", "❌",
+    "🍕", "🍔", "🍟", "☕", "🎮", "🎵", "📷", "🚀"
+];
+
+function ambilEmojiSering() {
     try {
-
-        const response =
-            await fetch("/pesan", {
-                method: "POST",
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-                body: JSON.stringify({
-                    id_penerima:
-                        currentChatUserId,
-
-                    isi: url,
-
-                    id_pesan_reply: null,
-
-                    tipe: "stiker"
-                })
-            });
-
-        const data =
-            await response.json();
-
-        if (!data.berhasil) {
-
-            console.log(data.pesan);
-
-            return;
-        }
-
-        loadPesan();
-        loadRecent();
-
+        return JSON.parse(localStorage.getItem("emojiSering") || "{}");
     } catch (error) {
-
-        console.error(
-            "Gagal mengirim stiker:",
-            error
-        );
-
+        return {};
     }
 }
 
-function buatStiker(url) {
+function catatEmoji(emoji) {
+    const data = ambilEmojiSering();
 
-    const img = document.createElement("img");
+    data[emoji] = (data[emoji] || 0) + 1;
 
-    img.src = url;
-    img.className = "stiker";
+    try {
+        localStorage.setItem("emojiSering", JSON.stringify(data));
+    } catch (error) {
+        // abaikan kalau penyimpanan browser tidak tersedia
+    }
+}
 
-    img.addEventListener("click", () => {
-        kirimStiker(url);
+function daftarEmojiSering() {
+    const data = ambilEmojiSering();
+
+    const hasil = Object.keys(data)
+        .sort((a, b) => data[b] - data[a])
+        .slice(0, 6);
+
+    // lengkapi dengan emoji bawaan sampai 6
+    EMOJI_BAWAAN.forEach(emoji => {
+        if (hasil.length < 6 && !hasil.includes(emoji)) {
+            hasil.push(emoji);
+        }
     });
 
-    stikerList.appendChild(img);
+    return hasil;
+}
+
+function sisipkanEmoji(emoji) {
+    const awal = input.selectionStart ?? input.value.length;
+    const akhir = input.selectionEnd ?? awal;
+
+    input.value =
+        input.value.slice(0, awal) +
+        emoji +
+        input.value.slice(akhir);
+
+    const posisi = awal + emoji.length;
+
+    input.setSelectionRange(posisi, posisi);
+    input.focus();
+
+    // supaya tinggi kotak ketik ikut menyesuaikan
+    input.dispatchEvent(new Event("input"));
+}
+
+function buatTombolEmoji(emoji) {
+    const btn = document.createElement("button");
+
+    btn.type = "button";
+    btn.className = "emoji-btn";
+    btn.textContent = emoji;
+
+    btn.addEventListener("click", () => {
+        sisipkanEmoji(emoji);
+        catatEmoji(emoji);
+        renderEmojiSering();
+    });
+
+    return btn;
+}
+
+function renderEmojiSering() {
+    if (!emojiSering) return;
+
+    emojiSering.replaceChildren(
+        ...daftarEmojiSering().map(buatTombolEmoji)
+    );
+}
+
+function isiPanelEmoji() {
+    if (emojiSemua) {
+        emojiSemua.replaceChildren(
+            ...EMOJI_SEMUA.map(buatTombolEmoji)
+        );
+    }
+
+    renderEmojiSering();
+}
+
+function tutupEmoji() {
+    if (emojiPanel) {
+        emojiPanel.classList.remove("buka");
+    }
+}
+
+if (btnEmoji && emojiPanel) {
+    isiPanelEmoji();
+
+    btnEmoji.addEventListener("click", () => {
+        emojiPanel.classList.toggle("buka");
+    });
+
+    // klik di luar panel = tutup
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#emojiPanel, #btnEmoji")) {
+            tutupEmoji();
+        }
+    });
+}
+
+if (tutupEmojiBtn) {
+    tutupEmojiBtn.addEventListener("click", tutupEmoji);
+}
+
+
+// ---------- Kotak masuk (daftar percakapan) ----------
+
+function renderInbox() {
+    if (!inboxList) {
+        return;
+    }
+
+    const posisi = inboxList.scrollTop;
+
+    const kata = cariInbox
+        ? cariInbox.value.trim().toLowerCase()
+        : "";
+
+    const jumlahBelum = daftarChat.filter(
+        chat => Number(chat.belum_dibaca) > 0
+    ).length;
+
+    if (chipInboxBelum) {
+        chipInboxBelum.textContent = jumlahBelum;
+    }
+
+    const tampil = daftarChat.filter(chat => {
+        if (filterInbox === "belum" && Number(chat.belum_dibaca) === 0) {
+            return false;
+        }
+
+        return !kata || String(chat.nama).toLowerCase().includes(kata);
+    });
+
+    inboxList.replaceChildren();
+
+    if (tampil.length === 0) {
+        const kosong = document.createElement("p");
+
+        kosong.className = "inbox-kosong";
+        kosong.textContent =
+            daftarChat.length === 0
+                ? "Belum ada percakapan. Mulai dari halaman Contacts."
+                : "Tidak ada percakapan yang cocok.";
+
+        inboxList.appendChild(kosong);
+        return;
+    }
+
+    tampil.forEach(chat => {
+        const aktif =
+            Number(chat.id) === Number(currentChatUserId);
+
+        const teman = daftarTeman.find(
+            t => Number(t.id) === Number(chat.id)
+        );
+
+        const online = !!teman && teman.status === "online";
+
+        const item = document.createElement("div");
+
+        item.className = "inbox-item" + (aktif ? " aktif" : "");
+        item.setAttribute("role", "button");
+
+        const info = document.createElement("div");
+        info.className = "inbox-info";
+
+        // baris 1: nama + waktu
+        const baris1 = document.createElement("div");
+        baris1.className = "inbox-baris";
+
+        const nama = document.createElement("span");
+        nama.className = "inbox-nama";
+        nama.textContent = chat.nama;
+
+        const waktu = document.createElement("span");
+        waktu.className = "inbox-waktu";
+        waktu.textContent = waktuSingkat(chat.tanggal_waktu);
+
+        baris1.append(nama, waktu);
+
+        // baris 2: pesan terakhir + badge belum dibaca
+        const baris2 = document.createElement("div");
+        baris2.className = "inbox-baris";
+
+        const pesanTerakhir = document.createElement("span");
+        pesanTerakhir.className = "inbox-pesan";
+
+        let teks = chat.tipe === "stiker" ? "Stiker" : chat.isi;
+
+        if (Number(chat.dari_saya) === 1) {
+            teks = "Kamu: " + teks;
+        }
+
+        pesanTerakhir.textContent = teks;
+
+        baris2.appendChild(pesanTerakhir);
+
+        if (Number(chat.belum_dibaca) > 0) {
+            const badge = document.createElement("span");
+
+            badge.className = "badge-unread";
+            badge.textContent = chat.belum_dibaca;
+
+            baris2.appendChild(badge);
+        }
+
+        info.append(baris1, baris2);
+
+        item.append(buatAvatar(chat.nama, online), info);
+
+        item.addEventListener("click", () => {
+            bukaChat(chat.id, chat.nama);
+        });
+
+        inboxList.appendChild(item);
+    });
+
+    inboxList.scrollTop = posisi;
+}
+
+if (cariInbox) {
+    cariInbox.addEventListener("input", renderInbox);
+}
+
+semuaChipInbox.forEach(chip => {
+    chip.addEventListener("click", () => {
+        filterInbox = chip.dataset.inbox;
+
+        semuaChipInbox.forEach(c => {
+            c.classList.toggle("aktif", c === chip);
+        });
+
+        renderInbox();
+    });
+});
+
+// Tombol pensil = mulai pesan baru (pilih teman dari halaman Contacts)
+if (btnPesanBaru) {
+    btnPesanBaru.addEventListener("click", () => {
+        bukaPage(contactPage);
+        aktifkanMenu(kontak);
+    });
+}
+
+// Tombol kembali (tampilan HP): tutup percakapan, balik ke daftar
+if (btnKembaliInbox) {
+    btnKembaliInbox.addEventListener("click", () => {
+        currentChatUserId = null;
+        currentChatNama = "";
+
+        if (chatShell) {
+            chatShell.classList.remove("ada-chat");
+        }
+
+        renderInbox();
+    });
 }
 
 function inisial(nama) {
@@ -623,6 +906,8 @@ async function loadTeman() {
         daftarTeman = data.teman;
 
         renderTeman();
+        perbaruiHeaderChat();
+        renderInbox();
 
     } catch (error) {
         console.error("Gagal mengambil teman:", error);
@@ -724,24 +1009,35 @@ async function loadPesanLama() {
 
     sedangLoadPesanLama = true;
 
+    const idSaatIni = currentChatUserId;
     const tinggiSebelum = chatList.scrollHeight;
 
     try {
         const response = await fetch(
-            `/pesan/${currentChatUserId}?before=${pesanPalingLamaId}`
+            `/pesan/${idSaatIni}?before=${pesanPalingLamaId}`
         );
 
         const data = await response.json();
 
-        if (!data.berhasil) {
+        if (!data.berhasil || idSaatIni !== currentChatUserId) {
             return;
         }
 
         const fragment = document.createDocumentFragment();
 
-        data.pesan.forEach(pesan => {
-            tampilkanPesan(pesan, fragment);
-        });
+        const kunciTerakhir =
+            tampilkanDaftarPesan(data.pesan, fragment);
+
+        // Hindari pemisah tanggal ganda di sambungan dua kelompok pesan
+        const pertama = chatList.firstElementChild;
+
+        if (
+            pertama &&
+            pertama.classList.contains("pemisah-tanggal") &&
+            pertama.dataset.kunci === kunciTerakhir
+        ) {
+            pertama.remove();
+        }
 
         chatList.prepend(fragment);
 
@@ -751,10 +1047,8 @@ async function loadPesanLama() {
 
         masihAdaPesan = data.adaLagi;
 
-        const tinggiSesudah = chatList.scrollHeight;
-
         chatList.scrollTop =
-            tinggiSesudah - tinggiSebelum;
+            chatList.scrollHeight - tinggiSebelum;
 
     } catch (error) {
         console.error(
@@ -1182,6 +1476,8 @@ btnInputChat.addEventListener("click", async () => {
 
         input.placeholder = "Tulis pesan...";
 
+        paksaScroll = true;
+
         loadPesan();
         loadRecent();
 
@@ -1289,8 +1585,6 @@ fetch("/me")
 
         document.getElementById("namaUser").textContent =
             user.nama;
-
-        sapaan.textContent = `Selamat datang, ${user.nama}!!`;
 
         // Request lokasi setelah user berhasil login
         requestLocationPermission();
@@ -1403,6 +1697,10 @@ async function loadRecent() {
         if (!data.berhasil) {
             return;
         }
+
+        // Isi juga kotak masuk di halaman chat
+        daftarChat = data.chat;
+        renderInbox();
 
         listRecent.replaceChildren();
 

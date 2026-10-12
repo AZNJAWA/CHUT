@@ -71,6 +71,8 @@ const listRecent = document.querySelector(".list-recent");
 const tagUnread = document.querySelector(".tag-unread");
 const tagOnline = document.querySelector(".tag-online");
 
+const sapaan = document.querySelector(".sapaan")
+
 
 tambahStiker.addEventListener("click", () => {
     inputStiker.click();
@@ -1287,6 +1289,8 @@ fetch("/me")
 
         document.getElementById("namaUser").textContent =
             user.nama;
+
+        sapaan.textContent = `Selamat datang, ${user.nama}!!`;
 
         // Request lokasi setelah user berhasil login
         requestLocationPermission();

@@ -6,7 +6,7 @@ Aplikasi chat simpel buat ngobrol bareng temen. Santuy, cepet, tinggal gas. 🚀
 
 ## 📲 Download Aplikasi
 
-[![Download APK](https://img.shields.io/badge/⬇_Download-cchCHAT.apk-6c5ce7?style=for-the-badge&logo=android&logoColor=white)]([app%20ver/cchCHAT.apk](https://github.com/AZNJAWA/CHUT/blob/main/app%20ver/cchCHAT.apk)?raw=true)
+[![Download APK](https://img.shields.io/badge/⬇_Download-cchCHAT.apk-6c5ce7?style=for-the-badge&logo=android&logoColor=white)]([app%20ver/cchCHAT.apk](app%20ver/cchCHAT.apk)?raw=true)
 
 > Habis download, izinin dulu **install dari sumber tak dikenal** di HP lu, abis itu install deh.
 

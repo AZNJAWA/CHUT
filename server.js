@@ -560,7 +560,7 @@ app.post("/permintaan-teman/:id/terima", cekLogin, async (req, res) => {
             {
                 sql: `
                     UPDATE friendspermission
-                    SET status = 'diterima'
+                    SET status = 'accepted'
                     WHERE id = ?
                 `,
                 args: [idPermintaan]
@@ -588,7 +588,7 @@ app.post("/permintaan-teman/:id/tolak", cekLogin, async (req, res) => {
         const hasil = await db.execute({
             sql: `
                 UPDATE friendspermission
-                SET status = 'ditolak'
+                SET status = 'declined'
                 WHERE id = ?
                     AND id_penerima = ?
                     AND status = 'pending'
@@ -617,7 +617,6 @@ app.post("/permintaan-teman/:id/tolak", cekLogin, async (req, res) => {
         });
     }
 });
-
 
 app.get("/teman", cekLogin, async (req, res) => {
     try {

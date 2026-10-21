@@ -1,9 +1,35 @@
 :root {
     --warna-chat-pengirim: cadetblue;
     --warna-chat-self: cornflowerblue;
-
-    --warna-hamburgerxside: #111827; 
+    --warna-hamburgerxside: #111827;
     --warna-menu: #d1d5db;
+    --k-bg: #0a0f1f;
+    --k-kartu: #111a30;
+    --k-kartu-2: #16213c;
+    --k-garis: #202c4b;
+    --k-teks: #e9edf8;
+    --k-redup: #8793b3;
+    --k-aksen: #6c5ce7;
+    --k-aksen-hover: #7d6ff0;
+    --k-hijau: #2ecc71;
+    --k-merah: #ff5c6c;
+    color-scheme: dark;
+}
+
+[data-theme="light"] {
+    --warna-hamburgerxside: #ffffff;
+    --warna-menu: #51607a;
+    --k-bg: #f3f5fb;
+    --k-kartu: #ffffff;
+    --k-kartu-2: #eef1f8;
+    --k-garis: #dde3f0;
+    --k-teks: #1b2338;
+    --k-redup: #6b7488;
+    --k-aksen: #6c5ce7;
+    --k-aksen-hover: #7d6ff0;
+    --k-hijau: #1e9e58;
+    --k-merah: #e4495a;
+    color-scheme: light;
 }
 
 * {
@@ -13,8 +39,10 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #0B1120;
+    font-family: 'Inter', Arial, sans-serif;
+    background-color: var(--k-bg);
+    color: var(--k-teks);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 
@@ -32,7 +60,7 @@ body {
     border: none;
     border-radius: 10px;
     background-color: var(--warna-hamburgerxside);
-    color: white;
+    color: var(--k-teks);
     font-size: 24px;
     cursor: pointer;
     transition: 0.2s;
@@ -55,18 +83,18 @@ body {
     height: 100vh;
     padding: 25px 15px;
     background-color: var(--warna-hamburgerxside);
-    color: white;
+    color: var(--k-teks);
     display: flex;
     flex-direction: column;
     z-index: 1;
-    transition: left 0.3s ease, transform 0.3s ease;
+    transition: left 0.3s ease, transform 0.3s ease, background-color 0.2s ease;
 }
 
-/* Sidebar menghilang */
-.sidebar.hide {
-    left: -230px;
-    transform: translateX(0);
-}
+    /* Sidebar menghilang */
+    .sidebar.hide {
+        left: -230px;
+        transform: translateX(0);
+    }
 
 
 /* =========================
@@ -77,11 +105,14 @@ body {
     padding: 60px 15px 10px 15px;
     margin-bottom: 30px;
 }
+
     .logo h2 {
         font-size: 24px;
     }
+
     .logo p {
         font-size: 17px;
+        color: var(--k-redup);
     }
 
 /*-------------------------------
@@ -97,24 +128,26 @@ body {
     overflow-x: hidden;
 }
 
-.main-content.sidebar-closed {
-    margin-left: 0;
-    width: 100%;
-}
+    .main-content.sidebar-closed {
+        margin-left: 0;
+        width: 100%;
+        padding-top: 80px;
+    }
 
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
         width: 100%;
+        padding-top: 80px;
     }
 
     .sidebar {
         z-index: 99;
     }
 
-    .sidebar:not(.hide) {
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
-    }
+        .sidebar:not(.hide) {
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+        }
 }
 
 
@@ -141,6 +174,7 @@ body {
         font-size: 13px;
         color: #98A7C1;
     }
+
     .container-d-a h2 {
         font-size: 30px;
         color: white;
@@ -208,14 +242,14 @@ body {
         cursor: pointer;
     }
 
-    .sss {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        width: 100%;
-        padding: 10px;
-    }
+.sss {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
+}
 
     .sss h1 {
         font-size: 50px;
@@ -236,9 +270,9 @@ body {
     transition: 0.2s ease;
 }
 
-.start-conver:hover {
-    background-color: #5B4BD5;
-}
+    .start-conver:hover {
+        background-color: #5B4BD5;
+    }
 
 @media (max-width: 768px) {
     .start-conver {
@@ -327,9 +361,9 @@ body {
     color: white;
 }
 
-.status.active {
-    color: lawngreen;
-}
+    .status.active {
+        color: lawngreen;
+    }
 
 .up-human-recent {
     display: flex;
@@ -455,49 +489,49 @@ body {
 }
 
 
-    .menu-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 12px 15px;
-        border-radius: 10px;
-        color: var(--warna-menu);
-        text-decoration: none;
-        transition: 0.2s;
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    color: var(--warna-menu);
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+
+    .menu-item span {
+        width: 25px;
+        text-align: center;
+        font-size: 18px;
     }
 
 
-        .menu-item span {
-            width: 25px;
-            text-align: center;
-            font-size: 20px;
-        }
+    .menu-item p {
+        font-size: 15px;
+    }
 
 
-        .menu-item p {
-            font-size: 15px;
-        }
+    .menu-item:hover {
+        background-color: #1f2937;
+        color: white;
+        transform: translateX(5px);
+    }
 
 
-        .menu-item:hover {
-            background-color: #1f2937;
-            color: white;
-            transform: translateX(5px);
-        }
-
-
-        .menu-item.active {
-            background-color: #374151;
-            color: white;
-        }
-    /* =========================
+    .menu-item.active {
+        background-color: #374151;
+        color: white;
+    }
+/* =========================
    BOTTOM
 ========================= */
 
-    .sidebar-bottom {
-        margin-top: auto;
-    }
-    /*===========================
+.sidebar-bottom {
+    margin-top: auto;
+}
+/*===========================
    BUAT HOME PAGE
 =============================*/
 
@@ -506,15 +540,6 @@ body {
 ======================================== */
 
 .contact {
-    --k-bg: #0a0f1f;
-    --k-kartu: #111a30;
-    --k-kartu-2: #16213c;
-    --k-garis: #202c4b;
-    --k-teks: #e9edf8;
-    --k-redup: #8793b3;
-    --k-aksen: #6c5ce7;
-    --k-aksen-hover: #7d6ff0;
-    --k-hijau: #2ecc71;
     min-height: 100vh;
     display: none;
     flex-direction: column;
@@ -793,7 +818,7 @@ body {
     .chip.aktif {
         background: rgba(108, 92, 231, 0.18);
         border-color: var(--k-aksen);
-        color: #fff;
+        color: var(--k-teks);
     }
 
 /* ---------- Isi: daftar teman + panel samping ---------- */
@@ -897,6 +922,7 @@ body {
     .btn-pesan:hover {
         background: var(--k-aksen);
         border-color: var(--k-aksen);
+        color: #fff;
     }
 
 /* ---------- Avatar inisial ---------- */
@@ -1093,18 +1119,9 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
-    /*ChatPages*/
+/*ChatPages*/
 
 .chat-page {
-    --k-bg: #0a0f1f;
-    --k-kartu: #111a30;
-    --k-kartu-2: #16213c;
-    --k-garis: #202c4b;
-    --k-teks: #e9edf8;
-    --k-redup: #8793b3;
-    --k-aksen: #6c5ce7;
-    --k-aksen-hover: #7d6ff0;
-    --k-hijau: #2ecc71;
     display: none;
     flex-direction: column;
     gap: 18px;
@@ -1265,7 +1282,7 @@ body {
     .chat-page .chip.aktif {
         background: rgba(108, 92, 231, 0.18);
         border-color: var(--k-aksen);
-        color: #fff;
+        color: var(--k-teks);
     }
 
 .inbox-list {
@@ -1474,6 +1491,7 @@ body {
     flex-direction: column;
     max-width: 70%;
     margin-bottom: 6px;
+    transition: margin-bottom 0.15s ease;
 }
 
     .pesan-baris.masuk {
@@ -1485,6 +1503,15 @@ body {
         align-self: flex-end;
         align-items: flex-end;
     }
+
+/* kepadatan pesan (diatur dari Settings → Appearance) */
+body[data-kepadatan="padat"] .pesan-baris {
+    margin-bottom: 2px;
+}
+
+body[data-kepadatan="padat"] .chat-page .pesan {
+    padding: 6px 10px;
+}
 
 /* gelembung (menimpa gaya .pesan lama) */
 .chat-page .pesan {
@@ -1501,6 +1528,7 @@ body {
     box-shadow: none;
     overflow-wrap: anywhere;
     word-break: break-word;
+    transition: padding 0.15s ease;
 }
 
 .pesan-baris.masuk .pesan {
@@ -2022,264 +2050,864 @@ body {
     }
 }
 
-    .about-page {
-        display: none;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
-    /*Settings*/
-    .settings-page {
-        display: none;
-        flex-direction: column;
-        margin: 20px;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
 
-        .settings-page h1 {
-            font: bold;
-        }
+/* ============================================================
+   HALAMAN JUDUL (dipakai Settings & Profile)
+============================================================ */
 
-    .setting-item {
-        display: flex;
-        margin: 10px;
-        background-color: darkcyan;
-        height: 10vh;
-        border: darkblue 5px groove;
-        border-radius: 10px;
-        transition: all 0.2s ease;
+.halaman-judul {
+    margin-bottom: 24px;
+}
+
+    .halaman-judul h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--k-teks);
     }
 
-        .setting-item p {
-            font-size: 30px;
-            margin: 10px;
-            justify-content: center;
-        }
-
-    #set-nick:hover {
-        background-color: aliceblue;
-        border: inset;
+    .halaman-judul p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: var(--k-redup);
     }
 
-    #set-nick:active {
-        background-color: blanchedalmond;
-        border: double;
-        scale: 1.1;
+
+/* ============================================================
+   SETTINGS
+   Nav tetap di kiri + satu panel konten per tab, bukan tumpukan
+   kartu kembar — supaya hierarki lebih jelas dan tidak monoton.
+============================================================ */
+
+.settings-page {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 28px 32px;
+    background: var(--k-bg);
+    color: var(--k-teks);
+    transition: all 0.3s ease;
+}
+
+.settings-shell {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+    max-width: 880px;
+}
+
+.settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: sticky;
+    top: 20px;
+}
+
+.settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: transparent;
+    color: var(--k-redup);
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+    .settings-tab i {
+        width: 15px;
+        font-size: 13px;
+        text-align: center;
     }
 
-    #set-tema {
-        background-color: burlywood;
-        border: 3px solid;
+    .settings-tab:hover {
+        color: var(--k-teks);
+        background: var(--k-kartu-2);
     }
 
-        #set-tema:hover {
-            background-color: chocolate;
-            border: 3px solid;
-        }
-
-        #set-tema:active {
-            background-color: coral;
-            scale: 1.05;
-        }
-
-    #logout-set {
-        background-color: red;
-        border: 3px dotted;
+    .settings-tab.aktif {
+        color: var(--k-teks);
+        background: var(--k-kartu-2);
+        border-left-color: var(--k-aksen);
     }
 
-        #logout-set:hover {
-            background-color: orangered;
-            border: 5px dotted;
-        }
+/* satu panel per tab, bagian dalamnya dipisah garis tipis
+   (bukan kartu-kartu terpisah dengan shadow yang sama) */
 
-        #logout-set:active {
-            background-color: brown;
-            border: solid;
-        }
-    /*keyframes*/
+.settings-panel {
+    background: var(--k-kartu);
+    border: 1px solid var(--k-garis);
+    border-radius: 16px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 16px 34px -24px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
 
-    @keyframes gradiasigerak {
-        0% {
-            background-position: 0% 50%;
-        }
+.settings-panel-blok {
+    padding: 20px 22px;
+}
 
-        20% {
-            background-position: 100% 50%;
-        }
-
-        50% {
-            background-position: 500% 400%;
-        }
-
-        80% {
-            background-position: 300% 200%;
-        }
-
-        90% {
-            background-position: 100% 50%;
-        }
-
-        100% {
-            background-position: 0% 50%;
-        }
+    .settings-panel-blok + .settings-panel-blok {
+        border-top: 1px solid var(--k-garis);
     }
 
-    .isipesan {
-        white-space: pre-wrap;
+    .settings-panel-blok h3 {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--k-teks);
     }
 
-    .waktu-pesan {
-        font-size: 11px;
-        opacity: 0.7;
-        align-self: flex-end;
-        margin: 0 5px 0;
+.settings-panel-sub {
+    margin: 0 0 16px;
+    font-size: 12px;
+    color: var(--k-redup);
+    line-height: 1.5;
+}
+
+.settings-panel-password {
+    background: var(--k-bg);
+}
+
+.settings-label {
+    display: block;
+    margin: 14px 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--k-redup);
+}
+
+.settings-panel-blok > .settings-label:first-child {
+    margin-top: 0;
+}
+
+.settings-section input[type="text"],
+.settings-section input[type="email"],
+.settings-section input[type="password"],
+.settings-section select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    background: var(--k-bg);
+    color: var(--k-teks);
+    border: 1px solid var(--k-garis);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.settings-panel-password input {
+    background: var(--k-kartu);
+}
+
+.settings-section input:focus,
+.settings-section select:focus {
+    border-color: var(--k-aksen);
+}
+
+.settings-section input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.settings-hint {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: var(--k-redup);
+}
+
+.settings-tombol-baris {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.settings-status-simpan {
+    margin: 10px 0 0;
+    font-size: 12px;
+    min-height: 16px;
+}
+
+    .settings-status-simpan.sukses {
+        color: var(--k-hijau);
     }
 
-    .aksi-pesan {
-        display: flex;
-        gap: 5px;
-        margin-top: 5px;
-        justify-content: flex-end;
+    .settings-status-simpan.gagal {
+        color: var(--k-merah);
     }
 
-        .aksi-pesan button {
-            border: none;
-            padding: 4px 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+.settings-avatar-baris {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
+.settings-avatar-nama {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--k-teks);
+}
 
-    .reply-preview {
-        position: fixed;
-        bottom: 85px;
-        left: calc(115px + 50vw);
-        transform: translateX(-50%);
-        width: 70%;
-        min-height: 55px;
-        display: none;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 15px;
-        background-color: white;
-        border: 2px solid black;
-        border-radius: 15px;
-        box-sizing: border-box;
-        transition: left 0.3s ease;
+.settings-avatar-sub {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--k-redup);
+}
+
+/* zona keluar akun: garis bawah tenang, bukan kartu merah penuh */
+
+.settings-danger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 16px 4px 0;
+    border-top: 1px solid var(--k-garis);
+}
+
+.settings-danger-judul {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--k-teks);
+}
+
+.settings-danger-sub {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--k-redup);
+}
+
+.btn-bahaya {
+    flex: none;
+    padding: 9px 18px;
+    background: transparent;
+    color: var(--k-merah);
+    border: 1px solid var(--k-merah);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+    .btn-bahaya:hover {
+        background: var(--k-merah);
+        color: #fff;
     }
 
-    .main-content.sidebar-closed .reply-preview {
-        left: 50vw;
+/* ---- Appearance: tema & aksen ---- */
+
+.pilihan-tema {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.opsi-tema {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--k-bg);
+    color: var(--k-redup);
+    border: 1px solid var(--k-garis);
+    border-radius: 12px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+    .opsi-tema:hover {
+        color: var(--k-teks);
     }
 
-    .reply-preview-text {
-        min-width: 0;
+    .opsi-tema.aktif {
+        border-color: var(--k-aksen);
+        color: var(--k-teks);
     }
 
-        .reply-preview-text span {
-            font-size: 12px;
-            opacity: 0.6;
-        }
+.pratinjau-tema {
+    display: block;
+    width: 48px;
+    height: 32px;
+    border-radius: 7px;
+    border: 1px solid var(--k-garis);
+}
 
-        .reply-preview-text p {
-            margin: 3px 0 0;
-            font-size: 14px;
-            opacity: 0.7;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.pratinjau-gelap {
+    background: linear-gradient(135deg, #0a0f1f 55%, #6c5ce7 55%);
+}
 
-    .reply-preview button {
-        border: none;
-        background: transparent;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
+.pratinjau-terang {
+    background: linear-gradient(135deg, #f3f5fb 55%, #6c5ce7 55%);
+}
+
+.pratinjau-sistem {
+    background: linear-gradient(90deg, #0a0f1f 50%, #f3f5fb 50%);
+}
+
+.pilihan-aksen {
+    display: flex;
+    gap: 10px;
+}
+
+.dot-aksen {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 1px var(--k-garis);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+}
+
+    .dot-aksen:hover {
+        transform: scale(1.1);
     }
 
-    .reply-dalam-pesan {
-        padding: 6px 10px;
-        margin-bottom: 7px;
-        border-left: 3px solid black;
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        opacity: 0.65;
+    .dot-aksen.aktif {
+        box-shadow: 0 0 0 2px var(--k-kartu), 0 0 0 4px var(--k-teks);
     }
 
-        .reply-dalam-pesan p {
-            margin: 0;
-            font-size: 12px;
-            opacity: 0.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+/* ---- switch toggle (Notifications & Privacy) ---- */
 
-    .stiker-item {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        width: 300px;
-        max-height: 300px;
-        padding: 12px;
-        background-color: white;
-        border: 2px solid black;
-        border-radius: 15px;
-        box-sizing: border-box;
-        display: none;
-        z-index: 100;
+.toggle-baris {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--k-garis);
+}
+
+.settings-panel-blok .toggle-baris:first-of-type {
+    padding-top: 0;
+}
+
+.toggle-baris:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.toggle-judul {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--k-teks);
+}
+
+.toggle-sub {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--k-redup);
+}
+
+.switch {
+    position: relative;
+    flex: none;
+    width: 42px;
+    height: 24px;
+}
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
     }
 
-        .stiker-item.buka {
-            display: block;
-        }
+.slider {
+    position: absolute;
+    inset: 0;
+    background: var(--k-garis);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
 
-    .stiker-header {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 10px;
+    .slider::before {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        width: 18px;
+        height: 18px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.2s;
     }
 
-    .input-stc-name-in-tenor {
-        flex: 1;
-        padding: 8px;
-        border: 2px solid black;
-        border-radius: 10px;
+.switch input:checked + .slider {
+    background: var(--k-aksen);
+}
+
+    .switch input:checked + .slider::before {
+        transform: translateX(18px);
     }
 
-    #tambahStiker {
-        width: 60px;
-        border: 2px solid black;
-        border-radius: 10px;
-        background: white;
-        cursor: pointer;
-        padding: 10px;
+
+/* ============================================================
+   PROFIL
+   Grid asimetris (info utama lebih lebar, sisi kanan jadi
+   tumpukan panel kecil) supaya tidak terasa seperti 3 kartu
+   kembar berjajar.
+============================================================ */
+
+.profile-page {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 28px 32px;
+    background: var(--k-bg);
+    color: var(--k-teks);
+    transition: all 0.3s ease;
+}
+
+.profil-kartu {
+    max-width: 880px;
+    background: var(--k-kartu);
+    border: 1px solid var(--k-garis);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 40px -26px rgba(0, 0, 0, 0.65);
+}
+
+.profil-cover {
+    position: relative;
+    height: 110px;
+    background: linear-gradient(135deg, var(--k-aksen), #26334c 70%);
+    overflow: hidden;
+}
+
+    .profil-cover::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient( 115deg, transparent 42%, rgba(255, 255, 255, 0.12) 50%, transparent 58% );
+    }
+
+.profil-identitas {
+    padding: 0 24px 22px;
+}
+
+.profil-avatar-besar {
+    width: 84px;
+    height: 84px;
+    margin-top: -42px;
+    border-radius: 50%;
+    border: 4px solid var(--k-kartu);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.5);
+}
+
+    .profil-avatar-besar.kecil {
+        width: 48px;
+        height: 48px;
+        margin-top: 0;
+        border-width: 2px;
+        font-size: 16px;
+        box-shadow: none;
+    }
+
+.profil-nama-baris {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+    .profil-nama-baris h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--k-teks);
+    }
+
+.profil-username {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--k-redup);
+}
+
+.profil-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--k-kartu-2);
+    color: var(--k-hijau);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+    .profil-status.offline {
+        color: var(--k-redup);
+    }
+
+    .profil-status i {
         font-size: 7px;
-        color: black;
     }
 
-    .stiker-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        max-height: 220px;
-        overflow-y: auto;
-    }
+.profil-pesan-status {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
 
-    .stiker-pesan {
-        width: 150px;
-        height: 150px;
-        max-width: 100%;
-        display: block;
-        object-fit: contain;
-        align-self: center;
-    }
-
-    .stiker {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        cursor: pointer;
+    .profil-pesan-status textarea {
+        flex: 1;
+        min-width: 0;
+        resize: none;
+        padding: 10px 12px;
+        background: var(--k-bg);
+        color: var(--k-teks);
+        border: 1px solid var(--k-garis);
         border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
     }
+
+        .profil-pesan-status textarea:focus {
+            border-color: var(--k-aksen);
+        }
+
+.btn-simpan-status {
+    flex: none;
+    padding: 10px 16px;
+    background: var(--k-aksen);
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn-simpan-status:hover {
+        background: var(--k-aksen-hover);
+    }
+
+.profil-grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 18px;
+    max-width: 880px;
+    align-items: start;
+}
+
+.profil-panel {
+    background: var(--k-kartu);
+    border: 1px solid var(--k-garis);
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+
+    .profil-panel h3 {
+        margin: 0 0 14px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--k-teks);
+    }
+
+.profil-samping {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.profil-baris-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    font-size: 13px;
+    color: var(--k-teks);
+    border-bottom: 1px solid var(--k-garis);
+}
+
+    .profil-baris-info:last-of-type {
+        border-bottom: 0;
+    }
+
+    .profil-baris-info i {
+        width: 16px;
+        color: var(--k-redup);
+    }
+
+.profil-catatan {
+    margin: 14px 0 0;
+    font-size: 11px;
+    color: var(--k-redup);
+    line-height: 1.5;
+}
+
+.profil-stat-baris {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+    .profil-stat-baris span {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--k-teks);
+    }
+
+    .profil-stat-baris p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--k-redup);
+    }
+
+.profil-avatar-stack {
+    display: flex;
+    margin-bottom: 16px;
+}
+
+    .profil-avatar-stack .avatar {
+        margin-left: -10px;
+        border: 2px solid var(--k-kartu);
+    }
+
+        .profil-avatar-stack .avatar:first-child {
+            margin-left: 0;
+        }
+
+.profil-keamanan p {
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: var(--k-redup);
+    line-height: 1.5;
+}
+
+
+
+/* ============================================================
+   RESPONSIVE: HP (MOBILE) — tambahan
+   Menutup bagian yang masih belum menyesuaikan di layar kecil:
+   home, kontak, kartu teman, emoji panel, stiker panel, dan
+   reply-preview lama yang posisinya fixed berdasar lebar desktop.
+============================================================ */
+
+@media (max-width: 600px) {
+    /* ---- Home / Beranda ---- */
+    .home-cnt {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        width: 100%;
+        min-height: auto;
+        padding: 16px;
+        gap: 14px;
+        text-align: left;
+    }
+
+    .lenx {
+        padding-left: 0;
+        gap: 14px;
+        width: 100%;
+    }
+
+    .sss {
+        padding: 0;
+    }
+
+        .sss h1 {
+            font-size: 28px;
+        }
+
+    .notifandaccount i {
+        font-size: 22px;
+        margin: 6px;
+    }
+
+    .container-d-a {
+        padding: 12px;
+        gap: 14px;
+    }
+
+        .container-d-a h2 {
+            font-size: 22px;
+        }
+
+    /* ---- Kontak ---- */
+    .contact {
+        padding: 16px 12px;
+    }
+
+    .kontak-header {
+        flex-wrap: wrap;
+    }
+
+        .kontak-header h1 {
+            font-size: 19px;
+        }
+
+    .btn-tambah {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-friend {
+        flex-direction: column;
+    }
+
+    #searchFriend {
+        width: 100%;
+    }
+
+    .contact-items {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .req-aksi {
+        grid-template-columns: 1fr;
+    }
+
+    /* ---- Chat page header & bubble ---- */
+    .chat-page {
+        padding: 16px 12px;
+    }
+
+        .chat-page .chat-judul h1 {
+            font-size: 18px;
+        }
+
+    .chat-head {
+        padding: 12px 14px;
+    }
+
+    .chat-page .chat-list {
+        padding: 14px 12px;
+    }
+
+    .pesan-baris {
+        max-width: 90%;
+    }
+
+    /* ---- Panel emoji ---- */
+    .emoji-panel {
+        left: 8px;
+        width: calc(100% - 16px);
+    }
+
+    .emoji-semua {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    /* ---- Settings & Profile ---- */
+    .settings-page,
+    .profile-page {
+        padding: 16px 12px;
+    }
+
+    .settings-shell {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .settings-nav {
+        position: static;
+        flex-direction: row;
+        gap: 4px;
+        padding-bottom: 4px;
+        overflow-x: auto;
+    }
+
+        .settings-nav .settings-tab {
+            border-left: 0;
+            border-bottom: 2px solid transparent;
+            border-radius: 8px;
+        }
+
+            .settings-nav .settings-tab.aktif {
+                border-bottom-color: var(--k-aksen);
+            }
+
+    .profil-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profil-nama-baris {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profil-pesan-status {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .settings-tombol-baris {
+        flex-direction: column;
+    }
+
+        .settings-tombol-baris button {
+            width: 100%;
+        }
+
+    .settings-danger {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .settings-danger .btn-bahaya {
+            width: 100%;
+        }
+}
+
+@media (max-width: 380px) {
+    .sss h1 {
+        font-size: 24px;
+    }
+
+    .contact-items {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .kartu-teman {
+        padding: 12px;
+    }
+
+    .emoji-semua {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}

@@ -14,7 +14,7 @@ const path = require("path");
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3200;
 app.use(cookieParser());
 
 // ========================================
@@ -79,7 +79,9 @@ function cekLogin(req, res, next) {
     }
 }
 
-app.use(express.static(path.join(__dirname, "frontend"), { index: false }));
+app.use(express.static(path.join(__dirname, "frontend"), {
+    index: false
+}));
 
 app.get("/", async (req, res) => {
     try {
@@ -340,6 +342,178 @@ app.get("/me", async (req, res) => {
             pesan: "Token tidak valid atau sudah expired"
         });
     }
+});
+
+// ========================================
+// PROFIL: UPDATE NAMA & EMAIL
+// ========================================
+
+app.patch("/me", cekLogin, async (req, res) => {
+    try {
+        const { nama, email } = req.body;
+
+        if (!nama || !nama.trim() || !email || !email.trim()) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Nama dan email wajib diisi"
+            });
+        }
+
+        const namaBersih = nama.trim();
+        const emailBersih = email.trim();
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailBersih)) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Format email tidak valid"
+            });
+        }
+
+        const cekEmail = await db.execute({
+            sql: `
+                SELECT id
+                FROM pengguna
+                WHERE email = ?
+                    AND id != ?
+            `,
+            args: [emailBersih, req.userId]
+        });
+
+        if (cekEmail.rows.length > 0) {
+            return res.status(409).json({
+                berhasil: false,
+                pesan: "Email sudah dipakai akun lain"
+            });
+        }
+
+        await db.execute({
+            sql: `
+                UPDATE pengguna
+                SET nama = ?, email = ?
+                WHERE id = ?
+            `,
+            args: [namaBersih, emailBersih, req.userId]
+        });
+
+        const hasil = await db.execute({
+            sql: `
+                SELECT id, nama, email, id_pengguna
+                FROM pengguna
+                WHERE id = ?
+            `,
+            args: [req.userId]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Profil berhasil diperbarui",
+            user: hasil.rows[0]
+        });
+
+    } catch (error) {
+        console.error("Error update profil:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal memperbarui profil"
+        });
+    }
+});
+
+// ========================================
+// GANTI KATA SANDI (sudah login)
+// ========================================
+
+app.post("/ganti-password", cekLogin, async (req, res) => {
+    try {
+        const { passwordLama, passwordBaru, passwordBaruUlang } = req.body;
+
+        if (!passwordLama || !passwordBaru || !passwordBaruUlang) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Semua kolom wajib diisi"
+            });
+        }
+
+        if (passwordBaru !== passwordBaruUlang) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Kata sandi baru tidak sama"
+            });
+        }
+
+        if (passwordBaru.length < 6) {
+            return res.status(400).json({
+                berhasil: false,
+                pesan: "Kata sandi baru minimal 6 karakter"
+            });
+        }
+
+        const hasil = await db.execute({
+            sql: `
+                SELECT password
+                FROM pengguna
+                WHERE id = ?
+            `,
+            args: [req.userId]
+        });
+
+        if (hasil.rows.length === 0) {
+            return res.status(404).json({
+                berhasil: false,
+                pesan: "Pengguna tidak ditemukan"
+            });
+        }
+
+        const cocok = await bcrypt.compare(
+            passwordLama,
+            hasil.rows[0].password
+        );
+
+        if (!cocok) {
+            return res.status(401).json({
+                berhasil: false,
+                pesan: "Kata sandi saat ini salah"
+            });
+        }
+
+        const passwordHash = await bcrypt.hash(passwordBaru, 10);
+
+        await db.execute({
+            sql: `
+                UPDATE pengguna
+                SET password = ?
+                WHERE id = ?
+            `,
+            args: [passwordHash, req.userId]
+        });
+
+        res.json({
+            berhasil: true,
+            pesan: "Kata sandi berhasil diganti"
+        });
+
+    } catch (error) {
+        console.error("Error ganti password:", error);
+
+        res.status(500).json({
+            berhasil: false,
+            pesan: "Gagal mengganti kata sandi"
+        });
+    }
+});
+
+// ========================================
+// LOGOUT
+// ========================================
+
+app.post("/logout", (req, res) => {
+    res.clearCookie("token");
+
+    res.json({
+        berhasil: true,
+        pesan: "Berhasil logout"
+    });
 });
 
 app.get("/cari-teman", cekLogin, async (req, res) => {
@@ -617,6 +791,7 @@ app.post("/permintaan-teman/:id/tolak", cekLogin, async (req, res) => {
         });
     }
 });
+
 
 app.get("/teman", cekLogin, async (req, res) => {
     try {

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -6,7 +5,11 @@
 <head>
     <meta charset="utf-8" />
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="Styles.css">
 
@@ -34,23 +37,23 @@
         <div class="menu">
 
             <a href="#" class="menu-item home-menu active">
-                <span>⌂</span>
+                <span><i class="fa-solid fa-house"></i></span>
                 <p>Home</p>
             </a>
 
             <a href="#" class="menu-item contact-menu">
-                <span>()</span>
+                <span><i class="fa-solid fa-user-group"></i></span>
                 <p>Contacts</p>
             </a>
 
             <a href="#" class="menu-item chat-menu">
-                <span>()</span>
+                <span><i class="fa-solid fa-comment-dots"></i></span>
                 <p>CHAT</p>
             </a>
 
-            <a href="#" class="menu-item about-menu">
-                <span>ℹ</span>
-                <p>About</p>
+            <a href="#" class="menu-item profile-menu">
+                <span><i class="fa-solid fa-user"></i></span>
+                <p>Profile</p>
             </a>
 
         </div>
@@ -59,7 +62,7 @@
         <div class="sidebar-bottom">
 
             <a href="#" class="menu-item setting-menu">
-                <span>⚙</span>
+                <span><i class="fa-solid fa-gear"></i></span>
                 <p>Settings</p>
             </a>
 
@@ -106,7 +109,7 @@
                                     <p>WOEEEEEEEEEEEEEEE</p>
                                 </div>
                             </div>
-                                
+
                         </div>
                     </div>
                 </div>
@@ -391,34 +394,321 @@
 
         </div>
 
-        <div class="page about-page">
-            <h1>About CHUT</h1>
-            <p>CHUT adalah aplikasi chatting sederhana.</p>
+        <!-- ============ PROFILE ============ -->
+        <div class="page profile-page" id="profilePage">
+
+            <div class="halaman-judul">
+                <h1>Profil</h1>
+                <p>Begini tampilanmu buat teman-teman di CHUT.</p>
+            </div>
+
+            <div class="profil-kartu">
+                <div class="profil-cover"></div>
+
+                <div class="profil-identitas">
+                    <div class="profil-avatar-besar" id="profilAvatar"></div>
+
+                    <div class="profil-nama-baris">
+                        <div>
+                            <h2 id="profilNama">Memuat...</h2>
+                            <p class="profil-username" id="profilUsername">@...</p>
+                        </div>
+
+                        <span class="profil-status" id="profilStatusBadge">
+                            <i class="fa-solid fa-circle"></i> Online
+                        </span>
+                    </div>
+
+                    <div class="profil-pesan-status">
+                        <textarea id="profilPesanStatus"
+                                  rows="1"
+                                  maxlength="80"
+                                  placeholder="Tulis status singkat, misalnya 'Lagi fokus kerja'"></textarea>
+
+                        <button class="btn-simpan-status" id="simpanStatus" type="button">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profil-grid">
+
+                <div class="profil-panel profil-tentang">
+                    <h3>Tentang kamu</h3>
+
+                    <div class="profil-baris-info">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span id="profilEmail">-</span>
+                    </div>
+
+                    <div class="profil-baris-info">
+                        <i class="fa-solid fa-id-badge"></i>
+                        <span id="profilIdBaris">-</span>
+                    </div>
+
+                    <p class="profil-catatan">
+                        Email dan ID pengguna bisa kamu ubah di halaman Settings.
+                        Status di atas cuma tersimpan di perangkat ini.
+                    </p>
+                </div>
+
+                <div class="profil-samping">
+
+                    <div class="profil-panel profil-lingkaran">
+                        <h3>Lingkaranmu</h3>
+
+                        <div class="profil-stat-baris">
+                            <span id="profilJumlahTeman">0</span>
+                            <p>teman</p>
+                        </div>
+
+                        <div class="profil-avatar-stack" id="profilAvatarStack"></div>
+
+                        <button class="btn-garis" id="profilKeKontak" type="button">
+                            <i class="fa fa-user-group"></i> Lihat semua teman
+                        </button>
+                    </div>
+
+                    <div class="profil-panel profil-keamanan">
+                        <h3>Akun & keamanan</h3>
+                        <p>Kelola nama, email, dan kata sandi kamu.</p>
+
+                        <button class="btn-garis" id="profilKeSettings" type="button">
+                            <i class="fa fa-gear"></i> Buka Settings
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="page settings-page">
-            <h1>Settings</h1>
+        <!-- ============ SETTINGS ============ -->
+        <div class="page settings-page" id="settingsPage">
 
-            <div class="setting-item" id="set-nick">
-                <p>Profile</p>
+            <div class="halaman-judul">
+                <h1>Settings</h1>
+                <p>Atur CHUT biar nyaman buat kamu.</p>
             </div>
 
-            <div class="setting-item" id="set-tema">
-                <p>Tema</p>
+            <div class="settings-shell">
+
+                <nav class="settings-nav">
+                    <button class="settings-tab aktif" data-tab-settings="account" type="button">
+                        <i class="fa-solid fa-user"></i> Account
+                    </button>
+                    <button class="settings-tab" data-tab-settings="appearance" type="button">
+                        <i class="fa-solid fa-palette"></i> Appearance
+                    </button>
+                    <button class="settings-tab" data-tab-settings="notifications" type="button">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                    </button>
+                    <button class="settings-tab" data-tab-settings="privacy" type="button">
+                        <i class="fa-solid fa-lock"></i> Privacy
+                    </button>
+                </nav>
+
+                <div class="settings-content">
+
+                    <!-- ACCOUNT -->
+                    <section class="settings-section" data-section-settings="account">
+
+                        <div class="settings-panel">
+
+                            <div class="settings-panel-blok settings-avatar-baris">
+                                <div class="profil-avatar-besar kecil" id="settingsAvatar"></div>
+
+                                <div>
+                                    <p class="settings-avatar-nama" id="settingsNamaSingkat">...</p>
+                                    <p class="settings-avatar-sub">Foto profil pakai inisial nama kamu</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-panel-blok">
+                                <label class="settings-label" for="inputNamaSettings">Nama lengkap</label>
+                                <input type="text" id="inputNamaSettings" placeholder="Nama lengkap">
+
+                                <label class="settings-label" for="inputUsernameSettings">Username</label>
+                                <input type="text" id="inputUsernameSettings" disabled>
+                                <p class="settings-hint">Username belum bisa diubah sendiri.</p>
+
+                                <label class="settings-label" for="inputEmailSettings">Email</label>
+                                <input type="email" id="inputEmailSettings" placeholder="Email">
+
+                                <div class="settings-tombol-baris">
+                                    <button class="btn-tambah" id="simpanAkun" type="button">Simpan perubahan</button>
+                                    <button class="btn-garis" id="bukaGantiPassword" type="button">Ganti kata sandi</button>
+                                </div>
+
+                                <p class="settings-status-simpan" id="statusSimpanAkun"></p>
+                            </div>
+
+                            <!-- form ganti password, tersembunyi sampai tombol diklik -->
+                            <div class="settings-panel-blok settings-panel-password" id="panelGantiPassword" hidden>
+                                <label class="settings-label" for="inputPasswordLama">Kata sandi saat ini</label>
+                                <input type="password" id="inputPasswordLama">
+
+                                <label class="settings-label" for="inputPasswordBaru">Kata sandi baru</label>
+                                <input type="password" id="inputPasswordBaru">
+
+                                <label class="settings-label" for="inputPasswordBaruUlang">Ulangi kata sandi baru</label>
+                                <input type="password" id="inputPasswordBaruUlang">
+
+                                <div class="settings-tombol-baris">
+                                    <button class="btn-tambah" id="simpanPasswordBaru" type="button">Ganti kata sandi</button>
+                                    <button class="btn-garis" id="batalGantiPassword" type="button">Batal</button>
+                                </div>
+
+                                <p class="settings-status-simpan" id="statusGantiPassword"></p>
+                            </div>
+
+                            <div class="settings-panel-blok">
+                                <div class="settings-danger">
+                                    <div>
+                                        <p class="settings-danger-judul">Keluar akun</p>
+                                        <p class="settings-danger-sub">Kamu akan keluar dari CHUT di perangkat ini.</p>
+                                    </div>
+
+                                    <button class="btn-bahaya" id="logoutSettings" type="button">Logout</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <!-- APPEARANCE -->
+                    <section class="settings-section" data-section-settings="appearance" hidden>
+                        <div class="settings-panel">
+
+                            <div class="settings-panel-blok">
+                                <h3>Tema</h3>
+                                <p class="settings-panel-sub">Pilih tampilan yang paling nyaman buat matamu.</p>
+
+                                <div class="pilihan-tema" id="pilihanTema">
+                                    <button class="opsi-tema" data-tema="dark" type="button">
+                                        <span class="pratinjau-tema pratinjau-gelap"></span>
+                                        Gelap
+                                    </button>
+
+                                    <button class="opsi-tema" data-tema="light" type="button">
+                                        <span class="pratinjau-tema pratinjau-terang"></span>
+                                        Terang
+                                    </button>
+
+                                    <button class="opsi-tema" data-tema="system" type="button">
+                                        <span class="pratinjau-tema pratinjau-sistem"></span>
+                                        Ikuti sistem
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="settings-panel-blok">
+                                <h3>Warna aksen</h3>
+                                <p class="settings-panel-sub">Warna ini dipakai di tombol dan highlight di seluruh CHUT.</p>
+
+                                <div class="pilihan-aksen" id="pilihanAksen">
+                                    <button class="dot-aksen" data-aksen="#6c5ce7" style="background:#6c5ce7" title="Violet"></button>
+                                    <button class="dot-aksen" data-aksen="#2ecc71" style="background:#2ecc71" title="Hijau"></button>
+                                    <button class="dot-aksen" data-aksen="#ff6b81" style="background:#ff6b81" title="Pink"></button>
+                                    <button class="dot-aksen" data-aksen="#0fb9b1" style="background:#0fb9b1" title="Teal"></button>
+                                    <button class="dot-aksen" data-aksen="#f0932b" style="background:#f0932b" title="Oranye"></button>
+                                </div>
+                            </div>
+
+                            <div class="settings-panel-blok">
+                                <h3>Kepadatan pesan</h3>
+                                <p class="settings-panel-sub">Atur jarak antar pesan di halaman chat.</p>
+
+                                <select id="pilihanKepadatan">
+                                    <option value="nyaman">Nyaman</option>
+                                    <option value="padat">Padat</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- NOTIFICATIONS -->
+                    <section class="settings-section" data-section-settings="notifications" hidden>
+                        <div class="settings-panel">
+                            <div class="settings-panel-blok">
+                                <h3>Notifikasi</h3>
+                                <p class="settings-panel-sub">Tersimpan di perangkat ini saja.</p>
+
+                                <div class="toggle-baris">
+                                    <div>
+                                        <p class="toggle-judul">Notifikasi pesan</p>
+                                        <p class="toggle-sub">Dapat info saat ada pesan baru masuk</p>
+                                    </div>
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleNotifPesan" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-baris">
+                                    <div>
+                                        <p class="toggle-judul">Suara notifikasi</p>
+                                        <p class="toggle-sub">Bunyi singkat saat pesan masuk</p>
+                                    </div>
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleSuaraNotif" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-baris">
+                                    <div>
+                                        <p class="toggle-judul">Jangan ganggu</p>
+                                        <p class="toggle-sub">Bisukan semua notifikasi sementara</p>
+                                    </div>
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleJanganGanggu">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PRIVACY -->
+                    <section class="settings-section" data-section-settings="privacy" hidden>
+                        <div class="settings-panel">
+                            <div class="settings-panel-blok">
+                                <h3>Privasi</h3>
+
+                                <div class="toggle-baris">
+                                    <div>
+                                        <p class="toggle-judul">Tampilkan status online</p>
+                                        <p class="toggle-sub">Teman bisa lihat kalau kamu lagi online</p>
+                                    </div>
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleStatusOnline" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <p class="settings-hint" id="hintStatusOnline"></p>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
 
             </div>
 
-            <div class="setting-item" id="logout-set">
-                <p>Logout</p>
-            </div>
         </div>
     </main>
 
-        
 
-        <script src="Script.js"></script>
+
+    <script src="Script.js"></script>
 
 </body>
 
 </html>
-

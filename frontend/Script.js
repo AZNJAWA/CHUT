@@ -46,19 +46,18 @@ const btnInputChat = document.querySelector(".btn-input-chat");
 
 const contactPage = document.getElementById("contact");
 const chatPage = document.querySelector(".chat-page");
-const aboutPage = document.querySelector(".about-page");
+const profilePage = document.querySelector(".profile-page");
 const settingsPage = document.querySelector(".settings-page");
 
 const semuaMenu = document.querySelectorAll(".menu-item");
 
 const homeMenu = document.querySelector(".home-menu");
 const chatMenu = document.querySelector(".chat-menu");
-const aboutMenu = document.querySelector(".about-menu");
+const profileMenu = document.querySelector(".profile-menu");
 const settingMenu = document.querySelector(".setting-menu");
 const kontak = document.querySelector(".contact-menu");
 
 const chatList = document.getElementById("chatList");
-const reply = document.createElement("button");
 
 const chatShell = document.getElementById("chatShell");
 const chatAvatar = document.getElementById("chatAvatar");
@@ -94,8 +93,6 @@ const listRecent = document.querySelector(".list-recent");
 const tagUnread = document.querySelector(".tag-unread");
 const tagOnline = document.querySelector(".tag-online");
 
-const sapaan = document.querySelector(".sapaan")
-
 
 chatList.addEventListener("scroll", () => {
     if (chatList.scrollTop <= 100) {
@@ -106,7 +103,7 @@ chatList.addEventListener("scroll", () => {
 function bukaPage(page) {
     contactPage.style.display = "none";
     chatPage.style.display = "none";
-    aboutPage.style.display = "none";
+    profilePage.style.display = "none";
     settingsPage.style.display = "none";
     home.style.display = "none";
 
@@ -146,11 +143,13 @@ chatMenu.addEventListener("click", (e) => {
     loadRecent();
 });
 
-aboutMenu.addEventListener("click", (e) => {
+profileMenu.addEventListener("click", (e) => {
     e.preventDefault();
 
-    bukaPage(aboutPage);
-    aktifkanMenu(aboutMenu);
+    bukaPage(profilePage);
+    aktifkanMenu(profileMenu);
+
+    renderProfilePage();
 });
 
 settingMenu.addEventListener("click", (e) => {
@@ -158,6 +157,8 @@ settingMenu.addEventListener("click", (e) => {
 
     bukaPage(settingsPage);
     aktifkanMenu(settingMenu);
+
+    isiFormAkunDariData();
 });
 
 
@@ -1144,6 +1145,10 @@ async function loadTeman() {
         perbaruiHeaderChat();
         renderInbox();
 
+        if (profilePage && profilePage.style.display !== "none") {
+            renderProfilePage();
+        }
+
     } catch (error) {
         console.error("Gagal mengambil teman:", error);
     }
@@ -1796,6 +1801,568 @@ async function getLocationFromServer(userId) {
     }
 }
 
+
+// ========================================
+// TEMA, AKSEN, KEPADATAN (Settings → Appearance)
+// ========================================
+
+const KUNCI_TEMA = "cht_tema";
+const KUNCI_AKSEN = "cht_aksen";
+const KUNCI_KEPADATAN = "cht_kepadatan";
+
+const PETA_AKSEN_HOVER = {
+    "#6c5ce7": "#7d6ff0",
+    "#2ecc71": "#4cd787",
+    "#ff6b81": "#ff8a9b",
+    "#0fb9b1": "#36d0c9",
+    "#f0932b": "#f5a94f"
+};
+
+function resolveTemaSistem() {
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+        ? "light"
+        : "dark";
+}
+
+function terapkanTema(tema) {
+    const efektif = tema === "system" ? resolveTemaSistem() : tema;
+    document.documentElement.dataset.theme = efektif;
+
+    document.querySelectorAll(".opsi-tema").forEach(btn => {
+        btn.classList.toggle("aktif", btn.dataset.tema === tema);
+    });
+}
+
+function terapkanAksen(warna) {
+    document.documentElement.style.setProperty("--k-aksen", warna);
+    document.documentElement.style.setProperty(
+        "--k-aksen-hover",
+        PETA_AKSEN_HOVER[warna] || warna
+    );
+
+    document.querySelectorAll(".dot-aksen").forEach(dot => {
+        dot.classList.toggle("aktif", dot.dataset.aksen === warna);
+    });
+}
+
+function terapkanKepadatan(nilai) {
+    document.body.dataset.kepadatan = nilai;
+
+    const select = document.getElementById("pilihanKepadatan");
+    if (select) select.value = nilai;
+}
+
+function muatPreferensiTampilan() {
+    const tema = localStorage.getItem(KUNCI_TEMA) || "dark";
+    const aksen = localStorage.getItem(KUNCI_AKSEN) || "#6c5ce7";
+    const kepadatan = localStorage.getItem(KUNCI_KEPADATAN) || "nyaman";
+
+    terapkanTema(tema);
+    terapkanAksen(aksen);
+    terapkanKepadatan(kepadatan);
+}
+
+muatPreferensiTampilan();
+
+if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+        const tema = localStorage.getItem(KUNCI_TEMA) || "dark";
+        if (tema === "system") terapkanTema("system");
+    });
+}
+
+document.querySelectorAll(".opsi-tema").forEach(btn => {
+    btn.addEventListener("click", () => {
+        localStorage.setItem(KUNCI_TEMA, btn.dataset.tema);
+        terapkanTema(btn.dataset.tema);
+    });
+});
+
+document.querySelectorAll(".dot-aksen").forEach(dot => {
+    dot.addEventListener("click", () => {
+        localStorage.setItem(KUNCI_AKSEN, dot.dataset.aksen);
+        terapkanAksen(dot.dataset.aksen);
+    });
+});
+
+const pilihanKepadatanEl = document.getElementById("pilihanKepadatan");
+
+if (pilihanKepadatanEl) {
+    pilihanKepadatanEl.addEventListener("change", () => {
+        localStorage.setItem(KUNCI_KEPADATAN, pilihanKepadatanEl.value);
+        terapkanKepadatan(pilihanKepadatanEl.value);
+    });
+}
+
+
+// ========================================
+// SETTINGS: TAB
+// ========================================
+
+const semuaTabSettings = document.querySelectorAll(".settings-tab[data-tab-settings]");
+const semuaSeksiSettings = document.querySelectorAll(".settings-section[data-section-settings]");
+
+semuaTabSettings.forEach(tab => {
+    tab.addEventListener("click", () => {
+        const target = tab.dataset.tabSettings;
+
+        semuaTabSettings.forEach(t => t.classList.toggle("aktif", t === tab));
+
+        semuaSeksiSettings.forEach(seksi => {
+            seksi.hidden = seksi.dataset.sectionSettings !== target;
+        });
+    });
+});
+
+
+// ========================================
+// SETTINGS: AKUN (nama & email)
+// ========================================
+
+const inputNamaSettings = document.getElementById("inputNamaSettings");
+const inputUsernameSettings = document.getElementById("inputUsernameSettings");
+const inputEmailSettings = document.getElementById("inputEmailSettings");
+const settingsAvatar = document.getElementById("settingsAvatar");
+const settingsNamaSingkat = document.getElementById("settingsNamaSingkat");
+const statusSimpanAkun = document.getElementById("statusSimpanAkun");
+const simpanAkunBtn = document.getElementById("simpanAkun");
+
+let dataAkunSaatIni = null;
+
+function isiFormAkunDariData() {
+    if (!dataAkunSaatIni) return;
+
+    if (inputNamaSettings) inputNamaSettings.value = dataAkunSaatIni.nama || "";
+    if (inputUsernameSettings) inputUsernameSettings.value = dataAkunSaatIni.id_pengguna || "";
+    if (inputEmailSettings) inputEmailSettings.value = dataAkunSaatIni.email || "";
+
+    if (settingsAvatar) {
+        settingsAvatar.replaceChildren(buatAvatar(dataAkunSaatIni.nama));
+    }
+
+    if (settingsNamaSingkat) {
+        settingsNamaSingkat.textContent = dataAkunSaatIni.nama || "";
+    }
+}
+
+if (simpanAkunBtn) {
+    simpanAkunBtn.addEventListener("click", async () => {
+        const nama = inputNamaSettings.value.trim();
+        const email = inputEmailSettings.value.trim();
+
+        if (!nama || !email) {
+            statusSimpanAkun.textContent = "Nama dan email wajib diisi.";
+            statusSimpanAkun.className = "settings-status-simpan gagal";
+            return;
+        }
+
+        simpanAkunBtn.disabled = true;
+        statusSimpanAkun.textContent = "";
+        statusSimpanAkun.className = "settings-status-simpan";
+
+        try {
+            const response = await fetch("/me", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nama, email })
+            });
+
+            const data = await response.json();
+
+            if (!data.berhasil) {
+                statusSimpanAkun.textContent = data.pesan || "Gagal menyimpan perubahan.";
+                statusSimpanAkun.className = "settings-status-simpan gagal";
+                return;
+            }
+
+            dataAkunSaatIni = data.user;
+            isiFormAkunDariData();
+            renderProfilePage();
+
+            const namaUserEl = document.getElementById("namaUser");
+            if (namaUserEl) namaUserEl.textContent = data.user.nama;
+
+            statusSimpanAkun.textContent = "Perubahan tersimpan.";
+            statusSimpanAkun.className = "settings-status-simpan sukses";
+
+        } catch (error) {
+            console.error("Gagal menyimpan akun:", error);
+            statusSimpanAkun.textContent = "Tidak bisa menghubungi server.";
+            statusSimpanAkun.className = "settings-status-simpan gagal";
+
+        } finally {
+            simpanAkunBtn.disabled = false;
+        }
+    });
+}
+
+
+// ========================================
+// SETTINGS: GANTI KATA SANDI
+// ========================================
+
+const bukaGantiPasswordBtn = document.getElementById("bukaGantiPassword");
+const panelGantiPassword = document.getElementById("panelGantiPassword");
+const batalGantiPasswordBtn = document.getElementById("batalGantiPassword");
+const simpanPasswordBaruBtn = document.getElementById("simpanPasswordBaru");
+const statusGantiPassword = document.getElementById("statusGantiPassword");
+
+if (bukaGantiPasswordBtn && panelGantiPassword) {
+    bukaGantiPasswordBtn.addEventListener("click", () => {
+        panelGantiPassword.hidden = !panelGantiPassword.hidden;
+    });
+}
+
+if (batalGantiPasswordBtn && panelGantiPassword) {
+    batalGantiPasswordBtn.addEventListener("click", () => {
+        panelGantiPassword.hidden = true;
+        document.getElementById("inputPasswordLama").value = "";
+        document.getElementById("inputPasswordBaru").value = "";
+        document.getElementById("inputPasswordBaruUlang").value = "";
+        statusGantiPassword.textContent = "";
+        statusGantiPassword.className = "settings-status-simpan";
+    });
+}
+
+if (simpanPasswordBaruBtn) {
+    simpanPasswordBaruBtn.addEventListener("click", async () => {
+        const passwordLama = document.getElementById("inputPasswordLama").value;
+        const passwordBaru = document.getElementById("inputPasswordBaru").value;
+        const passwordBaruUlang = document.getElementById("inputPasswordBaruUlang").value;
+
+        if (!passwordLama || !passwordBaru || !passwordBaruUlang) {
+            statusGantiPassword.textContent = "Semua kolom wajib diisi.";
+            statusGantiPassword.className = "settings-status-simpan gagal";
+            return;
+        }
+
+        if (passwordBaru !== passwordBaruUlang) {
+            statusGantiPassword.textContent = "Kata sandi baru tidak sama.";
+            statusGantiPassword.className = "settings-status-simpan gagal";
+            return;
+        }
+
+        simpanPasswordBaruBtn.disabled = true;
+
+        try {
+            const response = await fetch("/ganti-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ passwordLama, passwordBaru, passwordBaruUlang })
+            });
+
+            const data = await response.json();
+
+            if (!data.berhasil) {
+                statusGantiPassword.textContent = data.pesan || "Gagal mengganti kata sandi.";
+                statusGantiPassword.className = "settings-status-simpan gagal";
+                return;
+            }
+
+            statusGantiPassword.textContent = "Kata sandi berhasil diganti.";
+            statusGantiPassword.className = "settings-status-simpan sukses";
+
+            document.getElementById("inputPasswordLama").value = "";
+            document.getElementById("inputPasswordBaru").value = "";
+            document.getElementById("inputPasswordBaruUlang").value = "";
+
+        } catch (error) {
+            console.error("Gagal mengganti kata sandi:", error);
+            statusGantiPassword.textContent = "Tidak bisa menghubungi server.";
+            statusGantiPassword.className = "settings-status-simpan gagal";
+
+        } finally {
+            simpanPasswordBaruBtn.disabled = false;
+        }
+    });
+}
+
+
+// ========================================
+// LOGOUT
+// ========================================
+
+const logoutSettingsBtn = document.getElementById("logoutSettings");
+
+if (logoutSettingsBtn) {
+    logoutSettingsBtn.addEventListener("click", async () => {
+        logoutSettingsBtn.disabled = true;
+
+        try {
+            await fetch("/logout", { method: "POST" });
+        } catch (error) {
+            console.error("Gagal logout:", error);
+        }
+
+        window.location.href = "/login.html";
+    });
+}
+
+
+// ========================================
+// NOTIFIKASI (tersimpan di perangkat ini saja)
+// ========================================
+
+const KUNCI_NOTIF_PESAN = "cht_notif_pesan";
+const KUNCI_NOTIF_SUARA = "cht_notif_suara";
+const KUNCI_JANGAN_GANGGU = "cht_jangan_ganggu";
+
+const toggleNotifPesan = document.getElementById("toggleNotifPesan");
+const toggleSuaraNotif = document.getElementById("toggleSuaraNotif");
+const toggleJanganGanggu = document.getElementById("toggleJanganGanggu");
+
+function muatPreferensiNotifikasi() {
+    if (toggleNotifPesan) {
+        toggleNotifPesan.checked = localStorage.getItem(KUNCI_NOTIF_PESAN) !== "0";
+    }
+
+    if (toggleSuaraNotif) {
+        toggleSuaraNotif.checked = localStorage.getItem(KUNCI_NOTIF_SUARA) !== "0";
+    }
+
+    if (toggleJanganGanggu) {
+        toggleJanganGanggu.checked = localStorage.getItem(KUNCI_JANGAN_GANGGU) === "1";
+    }
+}
+
+muatPreferensiNotifikasi();
+
+if (toggleNotifPesan) {
+    toggleNotifPesan.addEventListener("change", () => {
+        localStorage.setItem(KUNCI_NOTIF_PESAN, toggleNotifPesan.checked ? "1" : "0");
+
+        if (
+            toggleNotifPesan.checked &&
+            "Notification" in window &&
+            Notification.permission === "default"
+        ) {
+            Notification.requestPermission();
+        }
+    });
+}
+
+if (toggleSuaraNotif) {
+    toggleSuaraNotif.addEventListener("change", () => {
+        localStorage.setItem(KUNCI_NOTIF_SUARA, toggleSuaraNotif.checked ? "1" : "0");
+    });
+}
+
+if (toggleJanganGanggu) {
+    toggleJanganGanggu.addEventListener("change", () => {
+        localStorage.setItem(KUNCI_JANGAN_GANGGU, toggleJanganGanggu.checked ? "1" : "0");
+    });
+}
+
+function bunyikanNotifikasi() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = 760;
+
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.26);
+
+    } catch (error) {
+        // abaikan kalau Web Audio tidak tersedia di browser ini
+    }
+}
+
+let totalUnreadSebelumnya = null;
+
+function tanganiNotifikasiPesanBaru(totalUnreadBaru, chatTerbaru) {
+    if (totalUnreadSebelumnya === null) {
+        totalUnreadSebelumnya = totalUnreadBaru;
+        return;
+    }
+
+    if (totalUnreadBaru <= totalUnreadSebelumnya) {
+        totalUnreadSebelumnya = totalUnreadBaru;
+        return;
+    }
+
+    totalUnreadSebelumnya = totalUnreadBaru;
+
+    const janganGanggu = localStorage.getItem(KUNCI_JANGAN_GANGGU) === "1";
+    if (janganGanggu) return;
+
+    const pakaiSuara = localStorage.getItem(KUNCI_NOTIF_SUARA) !== "0";
+    const pakaiNotifPesan = localStorage.getItem(KUNCI_NOTIF_PESAN) !== "0";
+
+    if (pakaiSuara) {
+        bunyikanNotifikasi();
+    }
+
+    if (
+        pakaiNotifPesan &&
+        document.visibilityState === "hidden" &&
+        "Notification" in window &&
+        Notification.permission === "granted"
+    ) {
+        const chatPengirim = chatTerbaru.find(c => Number(c.belum_dibaca) > 0);
+
+        new Notification("Pesan baru di CHUT", {
+            body: chatPengirim
+                ? `${chatPengirim.nama}: ${chatPengirim.tipe === "stiker" ? "Stiker" : chatPengirim.isi}`
+                : "Kamu punya pesan baru"
+        });
+    }
+}
+
+
+// ========================================
+// PRIVASI: SEMBUNYIKAN STATUS ONLINE
+// ========================================
+
+const KUNCI_SEMBUNYI_ONLINE = "cht_sembunyi_online";
+
+const toggleStatusOnline = document.getElementById("toggleStatusOnline");
+const hintStatusOnline = document.getElementById("hintStatusOnline");
+
+function statusOnlineDisembunyikan() {
+    return localStorage.getItem(KUNCI_SEMBUNYI_ONLINE) === "1";
+}
+
+function kirimStatusOnlineJikaDiizinkan() {
+    setStatus(statusOnlineDisembunyikan() ? "offline" : "online");
+}
+
+function muatPreferensiPrivasi() {
+    if (!toggleStatusOnline) return;
+
+    const disembunyikan = statusOnlineDisembunyikan();
+    toggleStatusOnline.checked = !disembunyikan;
+
+    if (hintStatusOnline) {
+        hintStatusOnline.textContent = disembunyikan
+            ? "Status online kamu sedang disembunyikan dari teman."
+            : "Teman kamu bisa lihat kalau kamu lagi online.";
+    }
+}
+
+muatPreferensiPrivasi();
+
+if (toggleStatusOnline) {
+    toggleStatusOnline.addEventListener("change", () => {
+        localStorage.setItem(
+            KUNCI_SEMBUNYI_ONLINE,
+            toggleStatusOnline.checked ? "0" : "1"
+        );
+
+        muatPreferensiPrivasi();
+        kirimStatusOnlineJikaDiizinkan();
+    });
+}
+
+
+// ========================================
+// HALAMAN PROFIL
+// ========================================
+
+const profilAvatar = document.getElementById("profilAvatar");
+const profilNama = document.getElementById("profilNama");
+const profilUsername = document.getElementById("profilUsername");
+const profilStatusBadge = document.getElementById("profilStatusBadge");
+const profilEmail = document.getElementById("profilEmail");
+const profilIdBaris = document.getElementById("profilIdBaris");
+const profilJumlahTeman = document.getElementById("profilJumlahTeman");
+const profilAvatarStack = document.getElementById("profilAvatarStack");
+const profilPesanStatus = document.getElementById("profilPesanStatus");
+const simpanStatusBtn = document.getElementById("simpanStatus");
+const profilKeKontakBtn = document.getElementById("profilKeKontak");
+const profilKeSettingsBtn = document.getElementById("profilKeSettings");
+
+function kunciStatusProfil() {
+    return `cht_status_${currentUserId}`;
+}
+
+function renderProfilePage() {
+    if (!dataAkunSaatIni) return;
+
+    if (profilAvatar) {
+        profilAvatar.replaceChildren(buatAvatar(dataAkunSaatIni.nama));
+    }
+
+    if (profilNama) profilNama.textContent = dataAkunSaatIni.nama || "";
+
+    if (profilUsername) {
+        profilUsername.textContent = dataAkunSaatIni.id_pengguna
+            ? `@${dataAkunSaatIni.id_pengguna}`
+            : "";
+    }
+
+    if (profilStatusBadge) {
+        const disembunyikan = statusOnlineDisembunyikan();
+
+        profilStatusBadge.classList.toggle("offline", disembunyikan);
+        profilStatusBadge.lastChild.textContent =
+            " " + (disembunyikan ? "Offline" : "Online");
+    }
+
+    if (profilEmail) profilEmail.textContent = dataAkunSaatIni.email || "-";
+
+    if (profilIdBaris) {
+        profilIdBaris.textContent = dataAkunSaatIni.id_pengguna
+            ? `@${dataAkunSaatIni.id_pengguna}`
+            : "-";
+    }
+
+    if (profilJumlahTeman) {
+        profilJumlahTeman.textContent = daftarTeman.length;
+    }
+
+    if (profilAvatarStack) {
+        profilAvatarStack.replaceChildren(
+            ...daftarTeman.slice(0, 6).map(t =>
+                buatAvatar(t.nama, t.status === "online", true)
+            )
+        );
+    }
+
+    if (profilPesanStatus && currentUserId) {
+        profilPesanStatus.value = localStorage.getItem(kunciStatusProfil()) || "";
+    }
+}
+
+if (simpanStatusBtn && profilPesanStatus) {
+    simpanStatusBtn.addEventListener("click", () => {
+        if (!currentUserId) return;
+
+        localStorage.setItem(kunciStatusProfil(), profilPesanStatus.value.trim());
+
+        simpanStatusBtn.textContent = "Tersimpan!";
+
+        setTimeout(() => {
+            simpanStatusBtn.textContent = "Simpan";
+        }, 1200);
+    });
+}
+
+if (profilKeKontakBtn) {
+    profilKeKontakBtn.addEventListener("click", () => {
+        bukaPage(contactPage);
+        aktifkanMenu(kontak);
+    });
+}
+
+if (profilKeSettingsBtn) {
+    profilKeSettingsBtn.addEventListener("click", () => {
+        bukaPage(settingsPage);
+        aktifkanMenu(settingMenu);
+        isiFormAkunDariData();
+    });
+}
+
+
 //--------------------------------------------------
 //              Cek status login user dan load teman
 //--------------------------------------------------
@@ -1821,8 +2388,14 @@ fetch("/me")
         document.getElementById("namaUser").textContent =
             user.nama;
 
-        sapaan.textContent = "Selamat Pagi, " + user.nama;
-        console.log("selamat, " + user.nama)
+        dataAkunSaatIni = user;
+        isiFormAkunDariData();
+        renderProfilePage();
+
+        const sapaanEl = document.querySelector(".sapaan");
+        if (sapaanEl) {
+            sapaanEl.textContent = `Halo, ${String(user.nama).split(" ")[0]}!`;
+        }
 
         // Request lokasi setelah user berhasil login
         requestLocationPermission();
@@ -1861,10 +2434,14 @@ function setOfflineBeacon() {
 }
 
 
-setStatus("online");
+kirimStatusOnlineJikaDiizinkan();
 
 heartbeat = setInterval(() => {
-    setStatus("online");
+    // hanya perbarui status kalau tab ini sedang aktif dilihat,
+    // supaya status "offline" saat pindah tab tidak langsung tertimpa lagi
+    if (document.visibilityState === "visible") {
+        kirimStatusOnlineJikaDiizinkan();
+    }
 }, 30000);
 
 window.addEventListener("pagehide", () => {
@@ -1877,7 +2454,7 @@ document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
         setOfflineBeacon();
     } else {
-        setStatus("online");
+        kirimStatusOnlineJikaDiizinkan();
     }
 });
 
@@ -1950,6 +2527,8 @@ async function loadRecent() {
 
         tagUnread.textContent =
             `${totalUnread} unread message${totalUnread === 1 ? "" : "s"}`;
+
+        tanganiNotifikasiPesanBaru(totalUnread, data.chat);
 
         data.chat.forEach(chat => {
 
